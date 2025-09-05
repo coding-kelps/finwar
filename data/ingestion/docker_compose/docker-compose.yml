@@ -1,0 +1,94 @@
+name: finwar
+services:
+  dagster_postgres:
+    image: postgres:17.4-bookworm
+    container_name: dagster_postgresql
+    environment:
+      POSTGRES_USER: 'postgres_user'
+      POSTGRES_PASSWORD: 'postgres_password'
+      POSTGRES_DB: 'postgres_db'
+    networks:
+      - finwar_ingestion
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres_user -d postgres_db']
+      interval: 10s
+      timeout: 8s
+      retries: 5
+
+  finwar_ingestion:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+    container_name: finwar-ingestion
+    image: finwar-ingestion
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: 'postgres_user'
+      DAGSTER_POSTGRES_PASSWORD: 'postgres_password'
+      DAGSTER_POSTGRES_DB: 'postgres_db'
+      DAGSTER_CURRENT_IMAGE: 'finwar-ingestion'
+    volumes:
+      - "../finwar_ingestion:/opt/dagster/finwar_ingestion"
+    networks:
+      - finwar_ingestion
+
+  dagster_webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile_dagster
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - '0.0.0.0'
+      - -p
+      - '3000'
+      - -w
+      - workspace.yaml
+    container_name: dagster-webserver
+    expose:
+      - '3000'
+    ports:
+      - '3000:3000'
+    environment:
+      DAGSTER_POSTGRES_USER: 'postgres_user'
+      DAGSTER_POSTGRES_PASSWORD: 'postgres_password'
+      DAGSTER_POSTGRES_DB: 'postgres_db'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      - finwar_ingestion
+    depends_on:
+      dagster_postgres:
+        condition: service_healthy
+      finwar_ingestion:
+        condition: service_started
+
+  dagster_daemon:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_dagster
+    entrypoint:
+      - dagster-daemon
+      - run
+    container_name: dagster-daemon
+    restart: on-failure
+    environment:
+      DAGSTER_POSTGRES_USER: 'postgres_user'
+      DAGSTER_POSTGRES_PASSWORD: 'postgres_password'
+      DAGSTER_POSTGRES_DB: 'postgres_db'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      - finwar_ingestion
+    depends_on:
+      dagster_postgres:
+        condition: service_healthy
+      finwar_ingestion:
+        condition: service_started
+
+networks:
+  finwar_ingestion:
+    driver: bridge
+    name: finwar_ingestion

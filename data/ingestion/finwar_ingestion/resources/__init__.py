@@ -1,0 +1,1 @@
+from finwar_ingestion.resources.postgresql import PostgreSQLResource

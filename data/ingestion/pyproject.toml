@@ -1,0 +1,19 @@
+[project]
+name = "finwar-ingestion"
+version = "0.1.0"
+description = "Data pipeline to ingest stock market datasets into a Time Series Database"
+authors = [
+    {name = "Coding Kelps"}
+]
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "dagster>=1.11.9",
+    "dagster-docker>=0.27.9",
+    "dagster-duckdb>=0.27.9",
+    "dagster-postgres>=0.27.9",
+    "psycopg[binary]>=3.2.9",
+]
+
+[tool.setuptools]
+packages = ["finwar_ingestion"]
