@@ -1,5 +1,6 @@
 use axum::{
     routing::get,
+    routing::post,
     Router,
 };
 
@@ -9,8 +10,8 @@ async fn main() {
     let port = 4444;
     let app = Router::new().route("/", get(|| async { "Welcome to FinWar!" }))
         .route("/ranking", get(ranking))
-        .route("/buy", get(buy))
-        .route("/sell", get(sell))
+        .route("/buy", post(buy))
+        .route("/sell", post(sell))
         .route("/price", get(price));
 
     let listener = tokio::net::TcpListener::bind(format!("{addr}:{port}")).await.expect("could not bind to address");
