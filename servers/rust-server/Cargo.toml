@@ -1,7 +1,17 @@
 [package]
 name = "finwar-market"
 version = "0.1.0"
+authors = ["Coding Kelps <contact@kelps.org>"]
+autotests = true
+categories = ["finance", "simulation"]
+description = "An API server simulating a stock market for finance bot tournament."
 edition = "2024"
+homepage = "https://finwar.kelps.io/"
+keywords = ["finance", "market", "server"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/coding-kelps/finwar"
+rust-version = "1.89"
 
 [dependencies]
 axum = "0.8.4"
