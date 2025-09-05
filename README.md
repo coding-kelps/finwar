@@ -1,2 +1,2 @@
-# finwar
+# FinWar
 🤖⚡️🤖 A finbot arena server.
