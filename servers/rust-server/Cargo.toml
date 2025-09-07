@@ -15,4 +15,6 @@ rust-version = "1.89"
 
 [dependencies]
 axum = "0.8.4"
+plotly = { version = "0.13.5", features = ["all"] }
+polars = { version = "0.50.0", features = ["lazy"] }
 tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
