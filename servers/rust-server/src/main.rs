@@ -2,13 +2,18 @@ use axum::{
     routing::get,
     routing::post,
     Router,
+    response::Redirect,
 };
+
+pub mod home;
+use crate::home::home;
 
 #[tokio::main]
 async fn main() {
     let addr = "0.0.0.0";
     let port = 4444;
-    let app = Router::new().route("/", get(|| async { "Welcome to FinWar!" }))
+    let app = Router::new().route("/", get(|| async { Redirect::to("/home") }))
+        .route("/home", get(home))
         .route("/ranking", get(ranking))
         .route("/buy", post(buy))
         .route("/sell", post(sell))
