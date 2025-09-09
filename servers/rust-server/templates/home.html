@@ -1,65 +1,73 @@
-{% extends "base.html" %}
-
-{% block title %}Home{% endblock %}
-
-{% block head %}
-  <style>
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block head %}
+<style>
     body {
-      background: #111111;
-      color: #f5f5f5;
-      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+        background: #111111;
+        color: #f5f5f5;
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
     }
     #content {
-      max-width: 60%;
-      margin: 40px auto;
-      background: #181818;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-      padding: 32px 40px;
+        max-width: 60%;
+        margin: 40px auto;
+        background: #181818;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        padding: 32px 40px;
     }
     h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5em;
-      color: #00bcd4;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 8px #000a;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5em;
+        color: #00bcd4;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #000a;
     }
     p {
-      font-size: 1.2rem;
-      margin-bottom: 2em;
-      color: #cccccc;
+        font-size: 1.2rem;
+        margin: 16px;
+        padding: 16px;
+        color: #cccccc;
     }
     .plot-container {
-      background: #111111;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 12px #0006;
-      margin-bottom: 2em;
+        background: #111111;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 12px #0006;
+        margin-bottom: 2em;
     }
     .plotly-graph-div {
-      border-radius: 12px;
-      margin-bottom: 22px;
+        border-radius: 12px;
+        margin-bottom: 32px;
         box-shadow: 0 2px 12px #0008;
     }
     @media (max-width: 600px) {
-      #content {
-        padding: 16px 8px;
-      }
-      h1 {
-        font-size: 2rem;
-      }
+        #content {
+            padding: 16px 8px;
+        }
+        h1 {
+            font-size: 2rem;
+        }
     }
-  </style>
-{% endblock %}
-
-{% block content %}
-    <h1>Welcome to Finwar</h1>
-    <p>This is the home page.</p>
-    {% for plot in plots %}
-        {{ plot|safe }}
-    {% endfor %}
+</style>
+{% endblock %} {% block content %}
+<h1>Welcome to Finwar</h1>
+<hr />
+<p>
+    Bots join a server, trade in a simulated market, and battle for profit.
+    <a
+        href="/ranking"
+        style="color: #00bcd4; text-decoration: underline; font-weight: bold"
+        >The Leaderboard</a
+    >
+    tracks the best.
+    <br />
+    Think of it as half-CTF - half-Wall Street.
+    <br />
+    Below is an example of data trading bots might be working with.
+    <br />
+</p>
+<hr />
+{% for plot in plots %} {{ plot|safe }} {% endfor %}
 <!-- {% call super() %} -->
 {% endblock %}
