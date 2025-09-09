@@ -1,9 +1,12 @@
 use plotly::{
+    color::Rgba,
+    common::{Line, Marker},
     layout::{Axis, themes::BuiltinTheme},
     *,
 };
 use polars::{error::PolarsError, frame::DataFrame};
 
+use plotly::histogram::HistFunc;
 use plotly::{Candlestick, Plot};
 
 pub fn a_nice_layout(title: &str) -> Layout {
@@ -92,5 +95,85 @@ pub fn plot_pie_files(files: &Vec<String>) -> Result<Plot, PolarsError> {
     let mut plot = Plot::new();
     plot.add_trace(trace);
     plot.set_layout(a_nice_layout("Files Size Distribution"));
+    Ok(plot)
+}
+
+// fn colored_and_styled_histograms(show: bool, file_name: &str) {
+//     let n = 500;
+//     let x1 = sample_uniform_distribution(n, 0.0, 5.0);
+//     let x2 = sample_uniform_distribution(n, 0.0, 10.0);
+//     let y1 = sample_uniform_distribution(n, 0.0, 1.0);
+//     let y2 = sample_uniform_distribution(n, 0.0, 2.0);
+
+//     let trace1 = Histogram::new_xy(x1, y1)
+//         .name("control")
+//         .hist_func(HistFunc::Count)
+//         .marker(
+//             Marker::new()
+//                 .color(Rgba::new(255, 100, 102, 0.7))
+//                 .line(Line::new().color(Rgba::new(255, 100, 102, 1.0)).width(1.0)),
+//         )
+//         .opacity(0.5)
+//         .auto_bin_x(false)
+//         .x_bins(Bins::new(0.5, 2.8, 0.06));
+//     let trace2 = Histogram::new_xy(x2, y2)
+//         .name("experimental")
+//         .hist_func(HistFunc::Count)
+//         .marker(
+//             Marker::new()
+//                 .color(Rgba::new(100, 200, 102, 0.7))
+//                 .line(Line::new().color(Rgba::new(100, 200, 102, 1.0)).width(1.0)),
+//         )
+//         .opacity(0.75)
+//         .auto_bin_x(false)
+//         .x_bins(Bins::new(-3.2, 4.0, 0.06));
+//     let layout = Layout::new()
+//         .title("Colored and Styled Histograms")
+//         .x_axis(Axis::new().title("Value"))
+//         .y_axis(Axis::new().title("Count"))
+//         .bar_mode(BarMode::Overlay)
+//         .bar_gap(0.05)
+//         .bar_group_gap(0.2);
+
+//     let mut plot = Plot::new();
+//     plot.set_layout(layout);
+//     plot.add_trace(trace1);
+//     plot.add_trace(trace2);
+
+//     let path = write_example_to_html(&plot, file_name);
+//     if show {
+//         plot.show_html(path);
+
+pub fn plot_histogram(
+    dfs: &Vec<DataFrame>, names: &Vec<String>,
+) -> Result<Plot, PolarsError> {
+    let colors = [
+        Rgba::new(255, 100, 102, 0.7),
+        Rgba::new(100, 200, 102, 0.7),
+        Rgba::new(100, 100, 255, 0.7),
+        Rgba::new(255, 200, 100, 0.7),
+    ];
+
+    let mut plot = Plot::new();
+
+    for (i, df) in dfs.iter().enumerate() {
+        let close =
+            df.column("Close")?.f64()?.into_no_null_iter().collect::<Vec<_>>();
+        let trace =
+            Histogram::new(close)
+                .name(format!(
+                    "Stock {}",
+                    names.get(i).unwrap_or(&"Unknown".to_string())
+                ))
+                .hist_func(HistFunc::Count)
+                .marker(Marker::new().color(colors[i % colors.len()]).line(
+                    Line::new().color(colors[i % colors.len()]).width(1.0),
+                ))
+                .opacity(0.7)
+                .auto_bin_x(false);
+        plot.add_trace(trace);
+    }
+
+    plot.set_layout(a_nice_layout("Close Price Distribution"));
     Ok(plot)
 }
