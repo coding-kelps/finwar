@@ -1,15 +1,14 @@
 use askama::Template;
-use axum::response::{Html, IntoResponse};
-use plotly::histogram;
+use axum::{
+    extract::State,
+    response::{Html, IntoResponse},
+};
 
 use crate::{
-    data::{list_files_in_folder, read_csv},
     error::AppError,
-    render::{plot_candlesticks, plot_histogram, plot_pie_files},
+    render::{PlotlyHtml, plot_candlesticks, plot_histogram},
+    state::AppState,
 };
-use rand::seq::SliceRandom;
-
-type PlotlyHtml = String;
 
 #[derive(Template)]
 #[template(path = "home.html")]
@@ -17,18 +16,12 @@ struct HomeTemplate {
     plots: Vec<PlotlyHtml>,
 }
 
-pub async fn home() -> Result<impl IntoResponse, AppError> {
-    let mut potentials = list_files_in_folder("./local/data/Stocks")?;
-    let plot_pie = plot_pie_files(&potentials)?;
-    let mut rng = rand::rng();
-    potentials.shuffle(&mut rng);
-    let random_files = potentials.into_iter().take(3).collect::<Vec<_>>();
-
-    let dataframes = random_files
-        .iter()
-        .map(|file| read_csv(&format!("./local/data/Stocks/{}", file)))
-        .collect::<Result<Vec<_>, _>>()?;
-
+pub async fn home(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppError> {
+    let dataframes = state.dataframes.clone();
+    let random_files = state.randos.clone();
+    let plot_pie = state.pie_distrubtion.clone();
     let histogram = plot_histogram(&dataframes, &random_files)?;
 
     let mut plots: Vec<PlotlyHtml> = dataframes
@@ -40,7 +33,7 @@ pub async fn home() -> Result<impl IntoResponse, AppError> {
         })
         .collect::<Result<_, AppError>>()?;
 
-    plots.insert(0, plot_pie.to_inline_html(Some("distribution")));
+    plots.insert(0, plot_pie);
     plots.insert(1, histogram.to_inline_html(Some("histogram")));
 
     let template = HomeTemplate { plots };

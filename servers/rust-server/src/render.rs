@@ -9,6 +9,8 @@ use polars::{error::PolarsError, frame::DataFrame};
 use plotly::histogram::HistFunc;
 use plotly::{Candlestick, Plot};
 
+pub type PlotlyHtml = String;
+
 pub fn a_nice_layout(title: &str) -> Layout {
     let theme = BuiltinTheme::PlotlyDark;
     let theme_template = theme.build();
