@@ -8,10 +8,12 @@ pub mod data;
 pub mod error;
 pub mod home;
 pub mod render;
+pub mod state;
 
 use crate::error::AppError;
 use crate::error::Error;
 use crate::home::home;
+use crate::state::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -19,6 +21,9 @@ async fn main() -> Result<(), Error> {
 
     let addr = "0.0.0.0";
     let port = 4444;
+
+    let state = AppState::new().map_err(Error::State)?;
+
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/home") }))
         .route("/home", get(home))
@@ -27,6 +32,7 @@ async fn main() -> Result<(), Error> {
         .route("/sell", post(sell))
         .route("/price", get(price))
         .fallback(|| async { AppError::NotFound })
+        .with_state(state)
         .layer(TraceLayer::new_for_http());
 
     let listener = tokio::net::TcpListener::bind(format!("{addr}:{port}"))

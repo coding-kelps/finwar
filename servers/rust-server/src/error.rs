@@ -10,6 +10,8 @@ pub enum Error {
     Bind(#[source] std::io::Error),
     /// Error running the server
     Run(#[source] std::io::Error),
+    /// Error with app state
+    State(#[from] crate::state::StateError),
 }
 
 #[derive(Debug, displaydoc::Display, thiserror::Error)]
@@ -22,6 +24,8 @@ pub enum AppError {
     Data(#[from] polars::prelude::PolarsError),
     /// IO error
     Io(#[from] std::io::Error),
+    /// App state
+    State(#[from] crate::state::StateError),
 }
 
 impl IntoResponse for AppError {
@@ -37,6 +41,7 @@ impl IntoResponse for AppError {
             AppError::NotFound => StatusCode::NOT_FOUND,
             AppError::Data(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::State(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
         let tmpl = Tmpl { error: self.to_string() };
         if let Ok(body) = tmpl.render() {
