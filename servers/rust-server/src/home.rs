@@ -19,9 +19,9 @@ struct HomeTemplate {
 pub async fn home(
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, AppError> {
-    let dataframes = state.dataframes.clone();
-    let random_files = state.randos.clone();
-    let plot_pie = state.pie_distrubtion.clone();
+    let dataframes = state.dataframes;
+    let random_files = state.randos;
+    let plot_pie = state.pie_distrubtion;
     let histogram = plot_histogram(&dataframes, &random_files)?;
 
     let mut plots: Vec<PlotlyHtml> = dataframes
