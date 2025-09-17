@@ -4,6 +4,7 @@ use crate::{
 };
 use polars::frame::DataFrame;
 use rand::seq::SliceRandom;
+use sea_orm::DatabaseConnection;
 use std::fmt;
 
 #[derive(Debug)]
@@ -33,10 +34,11 @@ pub struct AppState {
     pub randos: Vec<String>,
     pub dataframes: Vec<DataFrame>,
     pub pie_distrubtion: PlotlyHtml,
+    pub db: sea_orm::DatabaseConnection,
 }
 
 impl AppState {
-    pub fn new() -> Result<Self, StateError> {
+    pub async fn new(db: DatabaseConnection) -> Result<Self, StateError> {
         let mut all_files = list_files_in_folder("./local/data/Stocks")
             .map_err(|_| StateError::InitState)?;
         let plot_pie = plot_pie_files(&all_files)
@@ -52,11 +54,14 @@ impl AppState {
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| StateError::InitState)?;
 
+        // postgres://username:password@host/database?currentSchema=my_schema
+
         Ok(AppState {
             all_files,
             randos,
             dataframes,
             pie_distrubtion: plot_pie,
+            db,
         })
     }
 }
