@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
 };
+use sea_orm::DbErr;
 
 #[derive(displaydoc::Display, pretty_error_debug::Debug, thiserror::Error)]
 pub enum Error {
@@ -12,6 +13,8 @@ pub enum Error {
     Run(#[source] std::io::Error),
     /// Error with app state
     State(#[from] crate::state::StateError),
+    /// Error initializing the database
+    InitDb(#[from] DbErr),
 }
 
 #[derive(Debug, displaydoc::Display, thiserror::Error)]
