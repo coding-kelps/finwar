@@ -13,6 +13,9 @@ readme = "README.md"
 repository = "https://github.com/coding-kelps/finwar"
 rust-version = "1.89"
 
+[workspace]
+members = [".", "entity", "migration"]
+
 [dependencies]
 askama = "0.14.0"
 axum = "0.8.4"
@@ -21,10 +24,14 @@ plotly = { version = "0.13.5", features = ["all"] }
 polars = { version = "0.50.0", features = ["lazy"] }
 pretty-error-debug = "0.3.2"
 rand = "0.9.2"
-sea-orm = { version = "1.1.16", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-uuid"] }
+sea-orm = { version = "1.1.16", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-uuid", "debug-print"] }
 sqlx-postgres = "0.8.6"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
 tower-http = { version = "0.6.6", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
+async-std = { version = "1", features = ["attributes", "tokio1"] }
+dotenvy = "0.15.7"
+migration = { path = "migration" }
+entity = { path = "entity" }

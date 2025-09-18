@@ -1,8 +1,12 @@
 use axum::{Router, response::Redirect, routing::get, routing::post};
 
+use dotenvy::dotenv;
+
 use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
+
+use migration::{Migrator, MigratorTrait};
 
 pub mod data;
 pub mod error;
@@ -19,18 +23,25 @@ use crate::state::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt().with_max_level(Level::DEBUG).init();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .with_test_writer()
+        .init();
+
+    dotenv().ok();
+    let database_url =
+        std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let addr = "0.0.0.0";
     let port = 4444;
 
-    let db = sea_orm::Database::connect(
-        "postgres://root:toto@localhost:5432/database",
-    )
-    .await
-    .map_err(Error::InitDb)?;
+    let db_connection = sea_orm::Database::connect(&database_url)
+        .await
+        .map_err(Error::InitDb)?;
 
-    let state = AppState::new(db).await.map_err(Error::State)?;
+    Migrator::down(&db_connection, None).await?;
+    Migrator::up(&db_connection, None).await?;
+    let state = AppState::new(db_connection).await.map_err(Error::State)?;
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/home") }))
