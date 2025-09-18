@@ -1,19 +1,16 @@
-use axum::{Router, response::Redirect, routing::get, routing::post};
-
-use dotenvy::dotenv;
-
-use tower_http::trace::TraceLayer;
-use tracing::Level;
-use tracing::event;
-
-use migration::{Migrator, MigratorTrait};
-
 pub mod data;
 pub mod error;
 pub mod home;
 pub mod leaderboard;
 pub mod render;
 pub mod state;
+
+use axum::{Router, response::Redirect, routing::get, routing::post};
+use dotenvy::dotenv;
+use migration::{Migrator, MigratorTrait};
+use tower_http::trace::TraceLayer;
+use tracing::Level;
+use tracing::event;
 
 use crate::error::AppError;
 use crate::error::Error;
