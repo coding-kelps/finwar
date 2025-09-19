@@ -16,8 +16,8 @@ impl MigrationTrait for Migration {
                     .col(integer(Wallet::BotId))
                     .col(integer(Wallet::Cash).not_null())
                     .col(decimal_len(Wallet::Asset, 5, 2))
-                    .col(timestamp_with_time_zone(Wallet::CreatedAt))
-                    .col(timestamp_with_time_zone(Wallet::UpdatedAt))
+                    .col(timestamp_with_time_zone(Wallet::CreatedAt).default(Expr::current_timestamp()))
+                    .col(timestamp_with_time_zone(Wallet::UpdatedAt).default(Expr::current_timestamp()))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-wallet-bot_id")
