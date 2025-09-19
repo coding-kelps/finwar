@@ -32,6 +32,9 @@ sea-orm-cli migrate up
 # Generate new migration
 sea-orm-cli migrate generate <migration_name>
 
+# Generate the entities
+sea-orm-cli generate entity -o entity 2> /dev/null
+
 # Reset database
 sea-orm-cli migrate reset
 ```
