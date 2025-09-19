@@ -1,9 +1,11 @@
 pub mod data;
+pub mod enroll;
 pub mod error;
 pub mod home;
 pub mod leaderboard;
 pub mod render;
 pub mod state;
+pub mod trade;
 
 use axum::{Router, response::Redirect, routing::get, routing::post};
 use dotenvy::dotenv;
@@ -12,11 +14,13 @@ use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
 
+use crate::enroll::enroll;
 use crate::error::AppError;
 use crate::error::Error;
 use crate::home::home;
 use crate::leaderboard::leaderboard;
 use crate::state::AppState;
+use crate::trade::{buy, price, sell};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -44,9 +48,10 @@ async fn main() -> Result<(), Error> {
         .route("/", get(|| async { Redirect::to("/home") }))
         .route("/home", get(home))
         .route("/leaderboard", get(leaderboard))
-        .route("/buy", post(buy))
-        .route("/sell", post(sell))
-        .route("/price", get(price))
+        .route("/api/enroll", post(enroll))
+        .route("/api/buy", post(buy))
+        .route("/api/sell", post(sell))
+        .route("/api/price", get(price))
         .fallback(|| async { AppError::NotFound })
         .with_state(state)
         .layer(TraceLayer::new_for_http());
@@ -57,14 +62,4 @@ async fn main() -> Result<(), Error> {
     event!(Level::INFO, "server started and listening on http://{addr}:{port}");
     axum::serve(listener, app).await.map_err(Error::Run)?;
     Ok(())
-}
-
-async fn buy() -> Result<&'static str, AppError> {
-    Ok("buy")
-}
-async fn sell() -> Result<&'static str, AppError> {
-    Ok("sell")
-}
-async fn price() -> Result<&'static str, AppError> {
-    Err(AppError::NotFound)
 }
