@@ -1,6 +1,7 @@
 # General
-indent_style = "Block"
 unstable_features = true
+
+indent_style = "Block"
 max_width = 80
 use_small_heuristics = "Max"
 color = "Always"
