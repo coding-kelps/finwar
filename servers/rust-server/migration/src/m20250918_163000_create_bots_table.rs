@@ -7,12 +7,17 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
+            .get_connection()
+            .execute_unprepared("CREATE EXTENSION IF NOT EXISTS pgcrypto;")
+            .await?;
+
+        manager
             .create_table(
                 Table::create()
                     .table(Bot::Table)
                     .if_not_exists()
                     .col(pk_auto(Bot::Id))
-                    .col(uuid(Bot::Uuid).unique_key())
+                    .col(uuid(Bot::Uuid).not_null().unique_key().default(Expr::cust("gen_random_uuid()")))
                     .col(string(Bot::Name).not_null())
                     .col(
                         timestamp_with_time_zone(Bot::CreatedAt)
