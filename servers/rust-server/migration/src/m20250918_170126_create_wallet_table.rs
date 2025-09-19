@@ -14,7 +14,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Wallet::Id))
                     .col(integer(Wallet::BotId))
-                    .col(decimal_len(Wallet::Cash, 15, 2))
+                    .col(integer(Wallet::Cash).not_null())
                     .col(decimal_len(Wallet::Asset, 5, 2))
                     .col(timestamp_with_time_zone(Wallet::CreatedAt))
                     .col(timestamp_with_time_zone(Wallet::UpdatedAt))
