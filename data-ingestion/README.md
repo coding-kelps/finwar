@@ -9,11 +9,11 @@ Data pipeline to ingest stock market datasets into a Time Series Database.
 ```sh
 export POLYGON_API_KEY=...
 
-export POSTGRES_USER="finwar-data-ingestion"
-export POSTGRES_PASSWORD="MyPassword123"
+export POSTGRES_USER="finwar"
+export POSTGRES_PASSWORD="password"
 export POSTGRES_HOST="127.0.0.1"
 export POSTGRES_PORT="5432"
-export POSTGRES_DB="market"
+export POSTGRES_DB="finwar"
 ```
 
 

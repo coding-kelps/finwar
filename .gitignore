@@ -22,3 +22,6 @@ target
 
 # Ignore commitizen configuration
 .cz.toml
+
+# Ignore direnv
+.envrc

@@ -40,7 +40,7 @@ sea-orm-cli migrate reset
 ```
 
 ### Environment Setup
-- Set `DATABASE_URL=postgres://root:toto@localhost/database` 
+- Set `DATABASE_URL=postgres://finwar:password@localhost/finwar` 
 - Default server runs on `0.0.0.0:4444`
 - Stock data loaded from `./local/data/Stocks/` directory
 
