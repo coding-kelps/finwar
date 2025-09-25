@@ -18,6 +18,20 @@ pub enum Error {
 }
 
 #[derive(Debug, displaydoc::Display, thiserror::Error)]
+pub enum TradeError {
+    /// Bot not found
+    BotNotFound,
+    /// Wallet not found
+    WalletNotFound,
+    /// Insufficient funds
+    InsufficientFunds,
+    /// Invalid quantity
+    InvalidQuantity,
+    /// Database error
+    DbError(#[from] sea_orm::DbErr),
+}
+
+#[derive(Debug, displaydoc::Display, thiserror::Error)]
 pub enum AppError {
     /// Resource not found
     NotFound,
@@ -29,6 +43,8 @@ pub enum AppError {
     Io(#[from] std::io::Error),
     /// App state
     State(#[from] crate::state::StateError),
+    /// Trade error
+    Trade(#[from] TradeError),
 }
 
 impl IntoResponse for AppError {
@@ -45,6 +61,13 @@ impl IntoResponse for AppError {
             AppError::Data(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::State(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::Trade(e) => match e {
+                TradeError::BotNotFound => StatusCode::NOT_FOUND,
+                TradeError::WalletNotFound => StatusCode::NOT_FOUND,
+                TradeError::InsufficientFunds => StatusCode::BAD_REQUEST,
+                TradeError::InvalidQuantity => StatusCode::BAD_REQUEST,
+                TradeError::DbError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            },
         };
         let tmpl = Tmpl { error: self.to_string() };
         if let Ok(body) = tmpl.render() {

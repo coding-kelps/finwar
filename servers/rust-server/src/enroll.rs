@@ -19,8 +19,8 @@ pub async fn enroll(
 
     let wallet = wallet::ActiveModel {
         bot_id: Set(bot.id),
-        cash: Set(1000),
-        asset: Set(Decimal::new(0, 0)),
+        cash: Set(Decimal::new(1000_00, 2)),
+        asset: Set(Decimal::new(1, 0)),
         ..Default::default()
     };
     let wallet = wallet.insert(&state.db).await.unwrap();
