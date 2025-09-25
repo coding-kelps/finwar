@@ -2,7 +2,8 @@ name: Ruff
 
 on:
   pull_request:
-    branches: [ main ]
+    path:
+    - 'servers/python-server'
 
 jobs:
   lint:
