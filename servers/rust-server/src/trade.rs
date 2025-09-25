@@ -13,8 +13,8 @@ use uuid::Uuid;
 #[derive(serde::Deserialize)]
 pub struct OrderInput {
     pub bot_uuid: String,
-    pub cash: Option<f32>,
-    pub quantity: Option<f32>,
+    pub cash: Option<f64>,
+    pub quantity: Option<i32>,
 }
 
 pub async fn buy(
@@ -29,7 +29,7 @@ pub async fn buy(
         .map_err(|_| TradeError::WalletNotFound)?;
 
     if let Some(qty) = payload.quantity {
-        if qty <= 0.0 {
+        if qty <= 0 {
             return Err(TradeError::InvalidQuantity.into());
         }
     }
@@ -37,7 +37,7 @@ pub async fn buy(
         if cash <= 0.0 {
             return Err(TradeError::InvalidQuantity.into());
         }
-        if cash > wallet.cash.to_f32().unwrap() {
+        if cash > wallet.cash.to_f64().unwrap() {
             return Err(TradeError::InsufficientFunds.into());
         }
     }
