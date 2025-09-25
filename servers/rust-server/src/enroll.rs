@@ -10,6 +10,8 @@ pub struct EnrollPayload {
     pub name: String,
 }
 
+const STARTING_CASH: i64 = 10000_00;
+
 pub async fn enroll(
     State(state): State<AppState>, Json(payload): Json<EnrollPayload>,
 ) -> Result<String, AppError> {
@@ -19,7 +21,7 @@ pub async fn enroll(
 
     let wallet = wallet::ActiveModel {
         bot_id: Set(bot.id),
-        cash: Set(Decimal::new(1000_00, 2)),
+        cash: Set(Decimal::new(STARTING_CASH, 2)),
         asset: Set(1),
         ..Default::default()
     };
