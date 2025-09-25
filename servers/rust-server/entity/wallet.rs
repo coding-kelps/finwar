@@ -8,10 +8,9 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub bot_id: i32,
-    #[sea_orm(column_type = "Decimal(Some((5, 2)))")]
+    #[sea_orm(column_type = "Decimal(Some((15, 2)))")]
     pub cash: Decimal,
-    #[sea_orm(column_type = "Decimal(Some((5, 2)))")]
-    pub asset: Decimal,
+    pub asset: i32,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
 }
