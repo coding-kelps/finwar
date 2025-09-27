@@ -1,0 +1,74 @@
+type: finwar_data_ingestion.components.stocks_intraday_history.StocksIntradayHistoryComponent
+
+attributes:
+  start_date: 2025-07-01
+  end_date: 2025-09-30
+  time_partitioning: weekly
+  precision: day
+  symbols:
+    - AAPL
+    - MSFT
+    - AMZN
+    - NVDA
+    - GOOGL
+    - GOOG
+    - META
+    - BRKB
+    - TSLA
+    - UNH
+    - LLY
+    - JPM
+    - XOM
+    - JNJ
+    - V
+    - PG
+    - AVGO
+    - MA
+    - HD
+    - CVX
+    - MRK
+    - ABBV
+    - PEP
+    - COST
+    - ADBE
+    - KO
+    - CSCO
+    - WMT
+    - TMO
+    - MCD
+    - PFE
+    - CRM
+    - BAC
+    - ACN
+    - CMCSA
+    - LIN
+    - NFLX
+    - ABT
+    - ORCL
+    - DHR
+    - AMD
+    - WFC
+    - DIS
+    - TXN
+    - PM
+    - VZ
+    - INTU
+    - COP
+    - CAT
+    - AMGN
+    - NEE
+  polygon_api_key: "{{ env.POLYGON_API_KEY }}"
+  timescaledb_username: "{{ env.POSTGRES_USER }}"
+  timescaledb_password: "{{ env.POSTGRES_PASSWORD }}"
+  timescaledb_host: "{{ env.POSTGRES_HOST }}"
+  timescaledb_port: "{{ env.POSTGRES_PORT }}"
+  timescaledb_db: "{{ env.POSTGRES_DB }}"
+
+requirements:
+  env:
+    - POLYGON_API_KEY
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
+    - POSTGRES_HOST
+    - POSTGRES_PORT
+    - POSTGRES_DB
