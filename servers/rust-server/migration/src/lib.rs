@@ -3,6 +3,7 @@ pub use sea_orm_migration::prelude::*;
 mod m20250918_163000_create_bots_table;
 mod m20250918_170126_create_wallet_table;
 
+
 pub struct Migrator;
 
 #[async_trait::async_trait]
