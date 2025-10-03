@@ -4,7 +4,7 @@ attributes:
   start_date: 2025-07-01
   end_date: 2025-09-30
   time_partitioning: weekly
-  precision: day
+  precision: minute
   symbols:
     - AAPL
     - MSFT
