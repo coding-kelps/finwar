@@ -82,7 +82,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 		@dg.asset(
 			kinds={'python'},
 			group_name='ingestion',
-			code_version='0.2.0',
+			code_version='0.3.0',
 			description="""
             Extract the stocks intraday value from the Polygon API.
           """,
@@ -109,7 +109,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 							limit=50000,  # API max limit
 						)
 
-						if res['status'] == 'ERROR' or res['results'] is not None:
+						if res['status'] == 'ERROR' or res['results'] is None:
 							raise Exception(res['error'])
 						break
 					except Exception as e:
