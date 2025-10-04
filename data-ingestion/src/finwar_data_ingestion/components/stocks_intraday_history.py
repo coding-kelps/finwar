@@ -145,7 +145,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 		@dg.asset(
 			kinds={'python', 'timescaledb'},
 			group_name='ingestion',
-			code_version='0.2.0',
+			code_version='0.3.0',
 			description="""
           Load the extracted data to a TimescaleDB database.
         """,
@@ -167,10 +167,9 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
               CREATE TABLE IF NOT EXISTS {self.table_name} (
                   time TIMESTAMPTZ NOT NULL,
                   symbol TEXT NOT NULL,
-                  quotation DOUBLE PRECISION
+                  quotation DOUBLE PRECISION,
+                  PRIMARY KEY (time, symbol)
               );
-              CREATE UNIQUE INDEX IF NOT EXISTS {self.table_name}_time_symbol_idx
-              ON {self.table_name} (time, symbol);
               SELECT create_hypertable('{self.table_name}', 'time', if_not_exists => TRUE);
             """)
 

@@ -28,6 +28,8 @@ pub enum TradeError {
     /// Invalid quantity
     InvalidQuantity,
     /// Database error
+    DatabaseError,
+    /// Database error
     DbError(#[from] sea_orm::DbErr),
 }
 
@@ -66,6 +68,7 @@ impl IntoResponse for AppError {
                 TradeError::WalletNotFound => StatusCode::NOT_FOUND,
                 TradeError::InsufficientFunds => StatusCode::BAD_REQUEST,
                 TradeError::InvalidQuantity => StatusCode::BAD_REQUEST,
+                TradeError::DatabaseError => StatusCode::INTERNAL_SERVER_ERROR,
                 TradeError::DbError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             },
         };

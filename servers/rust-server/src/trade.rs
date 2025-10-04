@@ -3,11 +3,11 @@ use crate::{
     state::AppState,
 };
 use axum::{Json, extract::State};
-use entity::{bot, wallet};
+use entity::{bot, wallet, stocks_history};
 use num_traits::cast::ToPrimitive;
 use sea_orm::ColumnTrait;
 use sea_orm::prelude::*;
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, QueryOrder};
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -49,10 +49,29 @@ pub async fn sell(
 ) -> Result<&'static str, AppError> {
     Ok("sell")
 }
+
+#[derive(serde::Serialize)]
+pub struct PriceResponse {
+    pub time: DateTimeWithTimeZone,
+    pub symbol: String,
+    pub quotation: Option<f64>,
+}
+
 pub async fn price(
     State(state): State<AppState>,
-) -> Result<&'static str, AppError> {
-    Err(AppError::NotFound)
+) -> Result<Json<PriceResponse>, AppError> {
+    let stock = stocks_history::Entity::find()
+        .order_by_desc(stocks_history::Column::Time)
+        .one(&state.db)
+        .await
+        .map_err(|_| TradeError::DatabaseError)?
+        .ok_or(TradeError::DatabaseError)?;
+
+    Ok(Json(PriceResponse {
+        time: stock.time,
+        symbol: stock.symbol,
+        quotation: stock.quotation,
+    }))
 }
 
 async fn get_bot(

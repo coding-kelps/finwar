@@ -40,8 +40,8 @@ async fn main() -> Result<(), Error> {
         .await
         .map_err(Error::InitDb)?;
 
-    Migrator::down(&db_connection, None).await?;
-    Migrator::up(&db_connection, None).await?;
+    // Migrator::down(&db_connection, None).await?;
+    // Migrator::up(&db_connection, None).await?;
     let state = AppState::new(db_connection).await.map_err(Error::State)?;
 
     let app = Router::new()
