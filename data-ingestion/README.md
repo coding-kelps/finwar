@@ -4,7 +4,10 @@ Data pipeline to ingest stock market datasets into a Time Series Database.
 
 ## Getting started
 
-### Defines the required environment variables
+### Prerequisites
+
+1. Make sure the Database is running (to startup the database look [here](../README.md#running-the-database))
+2. Defines the required environment variables
 
 ```sh
 export POLYGON_API_KEY=...
@@ -30,13 +33,10 @@ Create a virtual environment, and install the required dependencies using _sync_
 uv sync
 ```
 
-### Run the database
-
-```bash
-docker compose up -d
-```
 
 ### Running Dagster
+
+#### Interactive Mode
 
 Start the Dagster UI web server:
 
@@ -44,4 +44,17 @@ Start the Dagster UI web server:
 uv run dg dev
 ```
 
-Open http://localhost:3000 in your browser to see the project.
+Open http://localhost:3000/asset-groups/ in your browser to see the project.
+
+#### Through the CLI
+
+You can also launch the pipeline directly from the CLI, as such:
+
+```bash
+uv run dg launch --assets download_stocks_intraday_history,load_stocks_intraday_history --partition 'AAPL|2025-09-21'
+```
+
+*here the pipeline is launched to collect the intraday history data from Apple Inc. on the last week of september.*
+
+> [!WARNING]  
+> The Polygon API free account only goes up to 5 req/min so beware in the number of parition you run.
