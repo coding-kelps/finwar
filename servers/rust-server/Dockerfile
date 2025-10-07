@@ -52,6 +52,7 @@ WORKDIR /app
 COPY --from=builder /build/target/release/finwar-market /app/finwar-market
 COPY templates ./templates
 COPY local ./local
+COPY static ./static
 
 ENV RUST_LOG=info
 
