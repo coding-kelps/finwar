@@ -10,12 +10,22 @@ Based on the dataset from : [Huge Stock Market Dataset](https://www.kaggle.com/d
 
 ## Getting Started
 
-### Running the Database
+### With Docker Compose (Recommended)
+
+Start both database and Rust server:
+
+```bash
+docker-compose up --build
+```
+
+The Rust server is now available on `http://localhost:4444`
+
+### Running only the Database
 
 Start the database using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker-compose up -d timescaledb
 ```
 
 This will start a PostgreSQL + TimescaleDB instance on port 5432 with default credentials:
@@ -29,3 +39,9 @@ To stop the database:
 docker-compose down
 ```
 
+### Running Servers Individually
+
+For detailed instructions on running each server locally:
+
+- **Rust Server**: See [servers/rust-server/README.md](servers/rust-server/README.md)
+- **Python Server**: See [servers/python-server/README.md](servers/python-server/README.md)
