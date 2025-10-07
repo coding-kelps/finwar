@@ -47,6 +47,8 @@ pub enum AppError {
     State(#[from] crate::state::StateError),
     /// Trade error
     Trade(#[from] TradeError),
+    /// Database error
+    DatabaseError(#[from] sea_orm::DbErr),
 }
 
 impl IntoResponse for AppError {
@@ -71,6 +73,7 @@ impl IntoResponse for AppError {
                 TradeError::DatabaseError => StatusCode::INTERNAL_SERVER_ERROR,
                 TradeError::DbError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             },
+            AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
         let tmpl = Tmpl { error: self.to_string() };
         if let Ok(body) = tmpl.render() {
