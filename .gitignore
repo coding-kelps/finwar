@@ -25,3 +25,6 @@ target
 
 # Ignore direnv
 .envrc
+
+# local VS Code settings
+.vscode/
