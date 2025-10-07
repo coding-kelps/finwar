@@ -9,7 +9,7 @@ pub mod trade;
 
 use axum::{Router, response::Redirect, routing::get, routing::post};
 use dotenvy::dotenv;
-use migration::{Migrator, MigratorTrait};
+use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
@@ -40,8 +40,6 @@ async fn main() -> Result<(), Error> {
         .await
         .map_err(Error::InitDb)?;
 
-    // Migrator::down(&db_connection, None).await?;
-    // Migrator::up(&db_connection, None).await?;
     let state = AppState::new(db_connection).await.map_err(Error::State)?;
 
     let app = Router::new()
@@ -52,6 +50,7 @@ async fn main() -> Result<(), Error> {
         .route("/api/buy", post(buy))
         .route("/api/sell", post(sell))
         .route("/api/price", get(price))
+        .nest_service("/static", ServeDir::new("static"))
         .fallback(|| async { AppError::NotFound })
         .with_state(state)
         .layer(TraceLayer::new_for_http());
