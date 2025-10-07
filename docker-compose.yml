@@ -14,6 +14,24 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-finwar}
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finwar"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rust-server:
+    build:
+      context: ./servers/rust-server
+      dockerfile: Dockerfile
+    ports:
+      - "4444:4444"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
+      RUST_LOG: info
+    depends_on:
+      timescaledb:
+        condition: service_healthy
 
 volumes:
   db_data:
