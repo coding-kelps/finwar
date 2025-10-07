@@ -23,7 +23,7 @@ cargo install sea-orm-cli
 ### Database Operations
 ```bash
 # Start PostgreSQL container
-docker-compose up -d
+docker-compose up -d timescaledb
 
 # Run migrations (from migration/ directory)
 sea-orm-cli migrate down
@@ -40,11 +40,33 @@ sea-orm-cli migrate reset
 ```
 
 ### Environment Setup
-- Set `DATABASE_URL=postgres://finwar:password@localhost/finwar` 
+- Set `DATABASE_URL=postgres://finwar:password@localhost/finwar` as an env variable or in a .env
 - Default server runs on `0.0.0.0:4444`
 - Stock data loaded from `./local/data/Stocks/` directory
 
 ### Running the Server
+
+#### Local Development
 ```bash
-cargo run  # Runs migrations automatically on startup
+cargo run
 ```
+
+#### Docker
+
+**Build the image:**
+```bash
+docker build -t finwar-rust-server .
+```
+
+**Run only the server container:**
+```bash
+docker run -p 4444:4444 -e DATABASE_URL=postgresql://finwar:password@host.docker.internal:5432/finwar finwar-rust-server
+```
+
+**Or use docker-compose (recommended):**
+```bash
+# From project root
+docker-compose up rust-server
+```
+
+This starts both the database and Rust server with proper networking.
