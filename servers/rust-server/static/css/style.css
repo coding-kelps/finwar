@@ -1,23 +1,48 @@
 body {
-    background-color: #0f0f23;
-    color: #c3c3c4;
-    font-family: 'Source Code Pro', monospace;
-    letter-spacing: 1px;
+  background-color: #0f0f23;
+  color: #c3c3c4;
+  font-family: "Source Code Pro", monospace;
+  letter-spacing: 1px;
+  margin: 0;
+  padding: 0;
 }
 a::before {
-    content: '[';
+  content: "[";
 }
 a::after {
-    content: ']';
+  content: "]";
 }
 a {
-    font-size: 14pt;
-    font-weight: 300;
-    color: #009401;
-    text-decoration: none;
-    outline: none;
+  font-size: 14pt;
+  font-weight: 300;
+  color: #009401;
+  text-decoration: none;
+  outline: none;
 }
 a:hover,
 a:focus {
-    color: #99ff99;
+  color: #99ff99;
+}
+main {
+  max-width: 80%;
+  margin: 40px auto;
+  background: #181818;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  padding: 32px 40px;
+}
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px #000a;
+}
+@media (max-width: 600px) {
+  main {
+    padding: 16px 8px;
+  }
+  h1 {
+    font-size: 2rem;
+  }
 }
