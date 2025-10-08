@@ -3,11 +3,13 @@
   <head>
     <title>{% block title %}Finwar - {{ title }}{% endblock %}</title>
     {% block head %}{% endblock %}
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
-    <div id="content">
-      {% block content %}<p>Placeholder content</p>{% endblock %}
-    </div>
+    <main>
+      {% block content %}
+      <p>Placeholder content</p>
+      {% endblock %}
+    </main>
   </body>
 </html>
