@@ -6,7 +6,7 @@ Data pipeline to ingest stock market datasets into a Time Series Database.
 
 ### Prerequisites
 
-1. Make sure the Database is running (to startup the database look [here](../README.md#running-the-database))
+1. Make sure the Database is running (to startup the database look [here](../README.md#running-only-the-database))
 2. Defines the required environment variables
 
 ```sh
