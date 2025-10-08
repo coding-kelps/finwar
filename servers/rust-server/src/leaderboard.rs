@@ -20,10 +20,12 @@ struct BotRank {
     name: String,
     cash: String,
     asset: i32,
+    profit_score: f64,
+    profit_percentage: f64,
 }
 
 pub async fn leaderboard(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
-    let bots = get_ranked_bots(&state.db, state.uuid_prefix_length).await?;
+    let bots = get_ranked_bots(&state.db, state.uuid_prefix_length, state.starting_cash).await?;
     let template = LeaderboardTemplate {
         total_bots: bots.len(),
         bots,
@@ -31,7 +33,7 @@ pub async fn leaderboard(State(state): State<AppState>) -> Result<impl IntoRespo
     Ok(Html(template.render()?))
 }
 
-async fn get_ranked_bots(db: &DatabaseConnection, uuid_prefix_length: usize) -> Result<Vec<BotRank>, sea_orm::DbErr> {
+async fn get_ranked_bots(db: &DatabaseConnection, uuid_prefix_length: usize, starting_cash: f64) -> Result<Vec<BotRank>, sea_orm::DbErr> {
     let bots = bot::Entity::find()
         .find_also_related(wallet::Entity)
         .order_by_desc(wallet::Column::Cash)
@@ -45,11 +47,21 @@ async fn get_ranked_bots(db: &DatabaseConnection, uuid_prefix_length: usize) -> 
                 let uuid_str = bot.uuid.to_string();
                 let id_short = uuid_str.chars().take(uuid_prefix_length).collect::<String>();
                 
+                let current_cash = w.cash.to_string().parse::<f64>().unwrap_or(0.0);
+                let profit_score = current_cash - starting_cash;
+                let profit_percentage = if starting_cash > 0.0 {
+                    (profit_score / starting_cash) * 100.0
+                } else {
+                    0.0
+                };
+                
                 BotRank {
                     id_short,
                     name: bot.name,
                     cash: w.cash.to_string(),
                     asset: w.asset,
+                    profit_score: profit_score,
+                    profit_percentage: profit_percentage,
                 }
             })
         })
