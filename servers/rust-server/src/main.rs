@@ -1,3 +1,4 @@
+pub mod bot;
 pub mod data;
 pub mod enroll;
 pub mod error;
@@ -14,6 +15,7 @@ use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
 
+use crate::bot::bot_detail;
 use crate::enroll::enroll;
 use crate::error::AppError;
 use crate::error::Error;
@@ -46,6 +48,7 @@ async fn main() -> Result<(), Error> {
         .route("/", get(|| async { Redirect::to("/home") }))
         .route("/home", get(home))
         .route("/leaderboard", get(leaderboard))
+        .route("/bot/{id}", get(bot_detail))
         .route("/api/enroll", post(enroll))
         .route("/api/buy", post(buy))
         .route("/api/sell", post(sell))
