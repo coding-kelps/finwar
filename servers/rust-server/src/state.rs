@@ -35,6 +35,7 @@ pub struct AppState {
     pub dataframes: Vec<DataFrame>,
     pub pie_distrubtion: PlotlyHtml,
     pub db: sea_orm::DatabaseConnection,
+    pub uuid_prefix_length: usize,
 }
 
 impl AppState {
@@ -54,14 +55,13 @@ impl AppState {
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| StateError::InitState)?;
 
-        // postgres://username:password@host/database?currentSchema=my_schema
-
         Ok(AppState {
             all_files,
             randos,
             dataframes,
             pie_distrubtion: plot_pie,
             db,
+            uuid_prefix_length: 18,
         })
     }
 }
