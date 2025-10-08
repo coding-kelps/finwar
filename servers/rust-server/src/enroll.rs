@@ -10,8 +10,6 @@ pub struct EnrollPayload {
     pub name: String,
 }
 
-const STARTING_CASH: i64 = 10000_00;
-
 pub async fn enroll(
     State(state): State<AppState>, Json(payload): Json<EnrollPayload>,
 ) -> Result<String, AppError> {
@@ -19,10 +17,12 @@ pub async fn enroll(
         bot::ActiveModel { name: Set(payload.name), ..Default::default() };
     let bot = bot.insert(&state.db).await.unwrap();
 
+    let starting_cash = (state.starting_cash * 100.0) as i64;
+    
     let wallet = wallet::ActiveModel {
         bot_id: Set(bot.id),
-        cash: Set(Decimal::new(STARTING_CASH, 2)),
-        asset: Set(1),
+        cash: Set(Decimal::new(starting_cash, 2)),
+        asset: Set(state.starting_assets),
         ..Default::default()
     };
     let wallet = wallet.insert(&state.db).await.unwrap();
