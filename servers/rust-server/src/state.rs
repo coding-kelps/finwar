@@ -64,7 +64,7 @@ impl AppState {
             pie_distrubtion: plot_pie,
             db,
             uuid_prefix_length: 18,
-            starting_cash: 1000.0,
+            starting_cash: 10000.0,
             starting_assets: 10,
         })
     }
