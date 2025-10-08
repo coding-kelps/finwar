@@ -1,11 +1,29 @@
-{% extends "base.html" %} {% block title %}Leaderboard{% endblock %}
-{% block head %}
-{% endblock %}
+{% extends "base.html" %} 
+{% block title %}Leaderboard{% endblock %}
+{% block head %}{% endblock %}
 {% block content %}
 <h1>Leaderboard</h1>
 <hr />
-<p>
-    There are currently {{ total_bots }} bots competing for profit.
-    <br />
-</p>
+<p>There are currently {{ total_bots }} bots competing for profit.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Bot</th>
+            <th>Cash</th>
+            <th>Assets</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bot in bots %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><a href="/bot/{{ bot.id_short }}">{{ bot.name }}</a></td>
+            <td>${{ bot.cash }}</td>
+            <td>{{ bot.asset }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
