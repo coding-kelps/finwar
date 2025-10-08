@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ bot.name }}{% endblock %}
+{% block head %}{% endblock %}
+{% block content %}
+<h1>Bot: [{{ bot.name }}] ({{ bot.id_short }})</h1>
+<hr />
+<h2>Wallet</h2>
+<table>
+    <tr>
+        <td>Cash:</td>
+        <td>${{ bot.cash }}</td>
+    </tr>
+    <tr>
+        <td>Assets:</td>
+        <td>{{ bot.asset }} shares</td>
+    </tr>
+</table>
+
+<p><a href="/leaderboard">Back to Leaderboard</a></p>
+{% endblock %}
