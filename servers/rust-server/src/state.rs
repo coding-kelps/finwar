@@ -36,6 +36,8 @@ pub struct AppState {
     pub pie_distrubtion: PlotlyHtml,
     pub db: sea_orm::DatabaseConnection,
     pub uuid_prefix_length: usize,
+    pub starting_cash: f64,
+    pub starting_assets: i32,
 }
 
 impl AppState {
@@ -62,6 +64,8 @@ impl AppState {
             pie_distrubtion: plot_pie,
             db,
             uuid_prefix_length: 18,
+            starting_cash: 1000.0,
+            starting_assets: 10,
         })
     }
 }
