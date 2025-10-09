@@ -3,5 +3,6 @@
 pub mod prelude;
 
 pub mod bot;
+pub mod orderbook;
 pub mod stocks_history;
 pub mod wallet;
