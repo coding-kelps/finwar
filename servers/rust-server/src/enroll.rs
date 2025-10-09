@@ -1,8 +1,9 @@
 use axum::{Json, extract::State};
 use sea_orm::{ActiveValue::Set, prelude::Decimal};
+use rand::Rng;
 
 use crate::{error::AppError, state::AppState};
-use entity::{bot, wallet};
+use entity::{bot, wallet, orderbook};
 use sea_orm::ActiveModelTrait;
 
 #[derive(serde::Deserialize)]
@@ -15,7 +16,7 @@ pub async fn enroll(
 ) -> Result<String, AppError> {
     let bot =
         bot::ActiveModel { name: Set(payload.name), ..Default::default() };
-    let bot = bot.insert(&state.db).await.unwrap();
+    let bot = bot.insert(&state.db).await?;
 
     let starting_cash = (state.starting_cash * 100.0) as i64;
     
@@ -25,7 +26,36 @@ pub async fn enroll(
         asset: Set(state.starting_assets),
         ..Default::default()
     };
-    let wallet = wallet.insert(&state.db).await.unwrap();
+    let wallet = wallet.insert(&state.db).await?;
+
+    
+    let orders: Vec<_> = {
+        let mut rng = rand::rng();
+        let symbols = vec!["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"];
+        let order_types = vec!["buy", "sell"];
+        
+        (0..3).map(|_| {
+            let symbol = symbols[rng.random_range(0..symbols.len())];
+            let order_type = order_types[rng.random_range(0..order_types.len())];
+            let quantity = rng.random_range(1..20);
+            let price = rng.random_range(100.0..500.0);
+            (symbol, order_type, quantity, price)
+        }).collect()
+    };
+    
+    for (symbol, order_type, quantity, price) in orders {
+        let order = orderbook::ActiveModel {
+            bot_id: Set(bot.id),
+            symbol: Set(symbol.to_string()),
+            order_type: Set(order_type.to_string()),
+            quantity: Set(quantity),
+            price: Set(price),
+            status: Set("pending".to_string()),
+            ..Default::default()
+        };
+        order.insert(&state.db).await?;
+    }
+
     Ok(format!(
         "Created wallet {} with {} for bot {}\n id: {}",
         &wallet.id, &wallet.cash, &bot.name, bot.uuid
