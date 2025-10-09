@@ -4,7 +4,7 @@ use rand::Rng;
 
 use crate::{error::AppError, state::AppState};
 use entity::{bot, wallet, orderbook};
-use sea_orm::ActiveModelTrait;
+    use sea_orm::ActiveModelTrait;
 
 #[derive(serde::Deserialize)]
 pub struct EnrollPayload {
@@ -43,6 +43,9 @@ pub async fn enroll(
         }).collect()
     };
     
+    let mut total_spent = 0.0;
+    let mut total_shares = 0;
+    
     for (symbol, order_type, quantity, price) in orders {
         let order = orderbook::ActiveModel {
             bot_id: Set(bot.id),
@@ -54,7 +57,17 @@ pub async fn enroll(
             ..Default::default()
         };
         order.insert(&state.db).await?;
+        
+        if order_type == "buy" {
+            total_spent += price * quantity as f64;
+            total_shares += quantity;
+        }
     }
+    
+    let mut wallet: wallet::ActiveModel = wallet.into();
+    wallet.cash = Set(Decimal::new(starting_cash - (total_spent * 100.0) as i64, 2));
+    wallet.asset = Set(state.starting_assets + total_shares);
+    let wallet = wallet.update(&state.db).await?;
 
     Ok(format!(
         "Created wallet {} with {} for bot {}\n id: {}",

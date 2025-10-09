@@ -20,10 +20,10 @@ head %}{% endblock %} {% block content %}
     <tr>
       <td>{{ loop.index }}</td>
       <td><a href="/bot/{{ bot.id_short }}">{{ bot.name }}</a></td>
-      <td>${{ bot.cash }}</td>
+      <td>${{ bot.cash | fmt("{:.2}") }}</td>
       <td>{{ bot.asset }}</td>
-      <td>${{ bot.profit_score }}</td>
-      <td>{{ bot.profit_percentage }}</td>
+      <td>${{ bot.profit_score | fmt("{:.2}") }}</td>
+      <td>{{ bot.profit_percentage | fmt("{:.2}") }}%</td>
     </tr>
     {% endfor %}
   </tbody>
