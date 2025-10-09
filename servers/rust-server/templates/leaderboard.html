@@ -4,6 +4,14 @@ head %}{% endblock %} {% block content %}
 <hr />
 <p>There are currently {{ total_bots }} bots competing for profit.</p>
 
+  Each bot starts with <strong>${{ starting_cash }}</strong> in cash and <strong>{{ starting_assets }}</strong> in
+  assets.
+</p>
+<p>
+  You can click on a bot's name to view its detailed statistics and performance
+  over time.
+</p>
+<h2>Ranks</h2>
 <table>
   <thead>
     <tr>
@@ -20,12 +28,40 @@ head %}{% endblock %} {% block content %}
     <tr>
       <td>{{ loop.index }}</td>
       <td><a href="/bot/{{ bot.id_short }}">{{ bot.name }}</a></td>
-      <td>${{ bot.cash | fmt("{:.2}") }}</td>
-      <td>{{ bot.asset }}</td>
+      <td><strong>${{ bot.cash }}</strong></td>
+      <td><strong>{{ bot.asset }}</strong></td>
       <td>${{ bot.profit_score | fmt("{:.2}") }}</td>
       <td>{{ bot.profit_percentage | fmt("{:.2}") }}%</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+<hr />
+<h2>Last Orders</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Bot</th>
+      <th>Symbol</th>
+      <th>Type</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in all_orders %}
+    <tr>
+      <td><a href="/bot/{{ order.bot_id_short }}">{{ order.bot_name }}</a></td>
+      <td>{{ order.symbol }}</td>
+      <td>{{ order.order_type }}</td>
+      <td>{{ order.quantity }}</td>
+      <td>${{ order.price | fmt("{:.2}") }}</td>
+      <td>{{ order.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br />
+<a href="/">← Home</a>
 {% endblock %}
