@@ -31,6 +31,10 @@ main {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
   padding: 32px 40px;
 }
+strong {
+  color: #ffff66;
+  text-shadow: 0 0 2px #ffff66;
+}
 h1 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -38,19 +42,12 @@ h1 {
   letter-spacing: 1px;
   text-shadow: 0 2px 8px #000a;
 }
-@media (max-width: 600px) {
-  main {
-    padding: 16px 8px;
-  }
-  h1 {
-    font-size: 2rem;
-  }
-}
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin-bottom: var(--spacing-base);
+  margin-bottom: 2em;
+  margin-top: 2em;
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--shadow);
