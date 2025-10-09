@@ -45,7 +45,7 @@ pub async fn buy(
     Ok("buy")
 }
 pub async fn sell(
-    State(state): State<AppState>, Json(payload): Json<OrderInput>,
+    State(_state): State<AppState>, Json(_payload): Json<OrderInput>,
 ) -> Result<&'static str, AppError> {
     Ok("sell")
 }

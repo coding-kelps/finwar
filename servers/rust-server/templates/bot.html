@@ -1,19 +1,43 @@
-{% extends "base.html" %}
-{% block title %}{{ bot.name }}{% endblock %}
-{% block head %}{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block title %}{{ bot.name }}{% endblock %} {% block
+head %}{% endblock %} {% block content %}
 <h1>Bot: [{{ bot.name }}] ({{ bot.id_short }})</h1>
 <hr />
 <h2>Wallet</h2>
 <table>
+  <tr>
+    <td>Cash:</td>
+    <td>${{ bot.cash }}</td>
+  </tr>
+  <tr>
+    <td>Assets:</td>
+    <td>{{ bot.asset }} shares</td>
+  </tr>
+</table>
+
+<h2>Orders</h2>
+<table>
+  <thead>
     <tr>
-        <td>Cash:</td>
-        <td>${{ bot.cash }}</td>
+      <th>ID</th>
+      <th>Symbol</th>
+      <th>Type</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Status</th>
     </tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
     <tr>
-        <td>Assets:</td>
-        <td>{{ bot.asset }} shares</td>
+      <td>{{ order.id }}</td>
+      <td>{{ order.symbol }}</td>
+      <td>{{ order.order_type }}</td>
+      <td>{{ order.quantity }}</td>
+      <td>${{ order.price }}</td>
+      <td>{{ order.status }}</td>
     </tr>
+    {% endfor %}
+  </tbody>
 </table>
 
 <p><a href="/leaderboard">Back to Leaderboard</a></p>
