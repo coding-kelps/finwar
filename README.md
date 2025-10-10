@@ -1,4 +1,5 @@
 # FinWar
+
 🤖⚡️🤖 A finbot arena server.
 
 Based on the dataset from : [Huge Stock Market Dataset](https://www.kaggle.com/datasets/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/data)
@@ -15,6 +16,7 @@ Based on the dataset from : [Huge Stock Market Dataset](https://www.kaggle.com/d
 Start both database and Rust server:
 
 ```bash
+cat .env.example > .env
 docker-compose up --build
 ```
 
@@ -29,6 +31,7 @@ docker-compose up -d timescaledb
 ```
 
 This will start a PostgreSQL + TimescaleDB instance on port 5432 with default credentials:
+
 - **User**: finwar
 - **Password**: password
 - **Database**: finwar
