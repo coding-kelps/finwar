@@ -55,6 +55,7 @@ impl IntoResponse for AppError {
         #[template(path = "error.html")]
         struct Tmpl {
             error: String,
+            status: StatusCode,
         }
 
         let status = match &self {
@@ -73,7 +74,7 @@ impl IntoResponse for AppError {
             },
             AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
-        let tmpl = Tmpl { error: self.to_string() };
+        let tmpl = Tmpl { error: self.to_string(), status };
         if let Ok(body) = tmpl.render() {
             (status, Html(body)).into_response()
         } else {
