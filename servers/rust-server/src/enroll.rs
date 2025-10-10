@@ -16,7 +16,13 @@ pub async fn enroll(
 ) -> Result<String, AppError> {
     let bot =
         bot::ActiveModel { name: Set(payload.name), ..Default::default() };
-    let bot = bot.insert(&state.db).await?;
+    let bot = match bot.insert(&state.db).await {
+        Ok(b) => b,
+        Err(sea_orm::DbErr::Query(e)) if e.to_string().contains("duplicate key") || e.to_string().contains("UNIQUE constraint") => {
+            return Err(AppError::BotNameExists);
+        }
+        Err(e) => return Err(e.into()),
+    };
 
     let starting_cash = (state.starting_cash * 100.0) as i64;
     
