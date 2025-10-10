@@ -18,7 +18,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Bot::Id))
                     .col(uuid(Bot::Uuid).not_null().unique_key().default(Expr::cust("gen_random_uuid()")))
-                    .col(string(Bot::Name).not_null())
+                    .col(string(Bot::Name).not_null().unique_key())
                     .col(
                         timestamp_with_time_zone(Bot::CreatedAt)
                             .default(Expr::current_timestamp()),
