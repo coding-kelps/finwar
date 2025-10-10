@@ -1,0 +1,23 @@
+name: Python Server Linting
+
+on:
+  pull_request:
+    paths:
+    - 'servers/python-server/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: astral-sh/ruff-action@v3
+        with:
+          src: "./servers/python-server/"
+
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check --diff"
+          src: "./servers/python-server/"
