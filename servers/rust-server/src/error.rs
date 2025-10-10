@@ -47,6 +47,8 @@ pub enum AppError {
     Trade(#[from] TradeError),
     /// Database error
     DatabaseError(#[from] sea_orm::DbErr),
+    /// Bot name already exists
+    BotNameExists,
 }
 
 impl IntoResponse for AppError {
@@ -61,7 +63,7 @@ impl IntoResponse for AppError {
         let status = match &self {
             AppError::Render(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::NotFound => StatusCode::NOT_FOUND,
-
+            AppError::BotNameExists => StatusCode::NOT_ACCEPTABLE,
             AppError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::State(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::Trade(e) => match e {

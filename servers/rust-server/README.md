@@ -81,7 +81,7 @@ docker-compose up rust-server
 ### to create a simple bot
 
 ```sh
-curl -X POST http://localhost:4444/api/enroll -H "Content-Type: application/json" -d '{\"name\":\"bot0\"}'
+curl -X POST http://localhost:4444/api/enroll -H "Content-Type: application/json" -d '{"name":"bot0"}'
 ```
 
 or in powershell:
