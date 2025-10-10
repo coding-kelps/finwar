@@ -30,7 +30,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     cargo chef cook --release --recipe-path recipe.json
 
 COPY Cargo.toml Cargo.lock ./
-COPY local ./local
 COPY templates ./templates
 COPY entity ./entity
 COPY migration ./migration
@@ -51,7 +50,6 @@ WORKDIR /app
 
 COPY --from=builder /build/target/release/finwar-market /app/finwar-market
 COPY templates ./templates
-COPY local ./local
 COPY static ./static
 
 ENV RUST_LOG=info
