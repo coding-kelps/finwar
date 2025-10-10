@@ -39,8 +39,6 @@ pub enum AppError {
     NotFound,
     /// Internal server error
     Render(#[from] askama::Error),
-    /// Data error
-    Data(#[from] polars::prelude::PolarsError),
     /// IO error
     Io(#[from] std::io::Error),
     /// App state
@@ -62,7 +60,7 @@ impl IntoResponse for AppError {
         let status = match &self {
             AppError::Render(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::NotFound => StatusCode::NOT_FOUND,
-            AppError::Data(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
             AppError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::State(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::Trade(e) => match e {
