@@ -145,7 +145,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 		@dg.asset(
 			kinds={'python', 'timescaledb'},
 			group_name='ingestion',
-			code_version='0.3.0',
+			code_version='0.4.0',
 			description="""
           Load the extracted data to a TimescaleDB database.
         """,
@@ -159,7 +159,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 			df = download_stocks_intraday_history
 			row_count = df.shape[0]
 
-			data = list(df[['timestamp', 'symbol', 'open']].itertuples(index=False, name=None))
+			data = list(df.itertuples(index=False, name=None))
 
 			with postgresql.get_connection() as conn:
 				with conn.cursor() as cur:
@@ -167,7 +167,11 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
               CREATE TABLE IF NOT EXISTS {self.table_name} (
                   time TIMESTAMPTZ NOT NULL,
                   symbol TEXT NOT NULL,
-                  quotation DOUBLE PRECISION,
+                  open DOUBLE PRECISION,
+				  high DOUBLE PRECISION,
+				  low DOUBLE PRECISION,
+				  close DOUBLE PRECISION,
+				  volume BIGINT,
                   PRIMARY KEY (time, symbol)
               );
               SELECT create_hypertable('{self.table_name}', 'time', if_not_exists => TRUE);
@@ -178,16 +182,28 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
               INSERT INTO {self.table_name} (
                   time,
                   symbol,
-                  quotation
+                  open,
+				  high,
+				  low,
+				  close,
+				  volume
               )
               VALUES (
                   %s,
                   %s,
-                  %s
+                  %s,
+				  %s,
+				  %s,
+				  %s,
+				  %s
               )
               ON CONFLICT (time, symbol)
               DO UPDATE SET
-                  quotation = EXCLUDED.quotation
+                  open = EXCLUDED.open,
+				  high = EXCLUDED.high,
+				  low = EXCLUDED.low,
+				  close = EXCLUDED.close,
+				  volume = EXCLUDED.volume
             """,
 						data,
 					)

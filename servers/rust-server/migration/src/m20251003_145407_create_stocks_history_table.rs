@@ -22,8 +22,24 @@ impl MigrationTrait for Migration {
                             .not_null()
                     )
                     .col(
-                        ColumnDef::new(StocksHistory::Quotation)
+                        ColumnDef::new(StocksHistory::Open)
                             .double()
+                    )
+                    .col(
+                        ColumnDef::new(StocksHistory::High)
+                            .double()
+                    )
+                    .col(
+                        ColumnDef::new(StocksHistory::Low)
+                            .double()
+                    )
+                    .col(
+                        ColumnDef::new(StocksHistory::Close)
+                            .double()
+                    )
+                    .col(
+                        ColumnDef::new(StocksHistory::Volume)
+                            .big_integer()
                     )
                     .primary_key(
                         Index::create()
@@ -47,5 +63,9 @@ enum StocksHistory {
     Table,
     Time,
     Symbol,
-    Quotation,
+    Open,
+    High,
+    Low,
+    Close,
+    Volume,
 }

@@ -39,6 +39,8 @@ pub enum AppError {
     NotFound,
     /// Internal server error
     Render(#[from] askama::Error),
+    /// Charming error
+    Charming(#[from] charming::EchartsError),
     /// IO error
     Io(#[from] std::io::Error),
     /// App state
@@ -62,6 +64,7 @@ impl IntoResponse for AppError {
 
         let status = match &self {
             AppError::Render(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::Charming(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::NotFound => StatusCode::NOT_FOUND,
             AppError::BotNameExists => StatusCode::NOT_ACCEPTABLE,
             AppError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,

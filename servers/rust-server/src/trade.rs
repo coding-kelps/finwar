@@ -70,7 +70,7 @@ pub async fn price(
     Ok(Json(PriceResponse {
         time: stock.time,
         symbol: stock.symbol,
-        quotation: stock.quotation,
+        quotation: stock.open.unwrap_or_default().to_f64(),
     }))
 }
 
