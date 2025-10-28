@@ -2,7 +2,7 @@ use crate::{
     error::{AppError, TradeError},
     state::AppState,
 };
-use axum::{Json, extract::State};
+use axum::{Json, extract::State, response::IntoResponse};
 use entity::{bot, wallet, stocks_history};
 use num_traits::cast::ToPrimitive;
 use sea_orm::ColumnTrait;
@@ -50,28 +50,28 @@ pub async fn sell(
     Ok("sell")
 }
 
-#[derive(serde::Serialize)]
-pub struct PriceResponse {
-    pub time: DateTimeWithTimeZone,
-    pub symbol: String,
-    pub quotation: Option<f64>,
-}
 
 pub async fn price(
     State(state): State<AppState>,
-) -> Result<Json<PriceResponse>, AppError> {
+) -> Result<impl IntoResponse, AppError> {
+    let current_time = state.clock.read().await.current_time();
+    
     let stock = stocks_history::Entity::find()
+        .filter(stocks_history::Column::Time.lte(current_time))
         .order_by_desc(stocks_history::Column::Time)
         .one(&state.db)
         .await
         .map_err(|_| TradeError::DatabaseError)?
         .ok_or(TradeError::DatabaseError)?;
 
-    Ok(Json(PriceResponse {
-        time: stock.time,
-        symbol: stock.symbol,
-        quotation: stock.open.unwrap_or_default().to_f64(),
-    }))
+    let price_mean = (
+        stock.open.unwrap_or_default().to_f64().unwrap_or(0.0) +
+        stock.close.unwrap_or_default().to_f64().unwrap_or(0.0) +
+        stock.high.unwrap_or_default().to_f64().unwrap_or(0.0) +
+        stock.low.unwrap_or_default().to_f64().unwrap_or(0.0)
+    ) / 4.0;
+
+    Ok(format!("{:.2}", price_mean))
 }
 
 async fn get_bot(
