@@ -48,7 +48,7 @@ pub async fn buy(
     let shares_to_buy = (payload.investment / current_price).floor() as i32;
     
     if shares_to_buy <= 0 {
-        return Err(TradeError::InvalidQuantity.into());
+        return Err(TradeError::InsufficientFunds.into());
     }
     
     let actual_cost = shares_to_buy as f64 * current_price;
