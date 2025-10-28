@@ -1,4 +1,5 @@
 pub mod bot;
+pub mod clock;
 pub mod data;
 pub mod enroll;
 pub mod error;
@@ -14,8 +15,14 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use sea_orm::EntityTrait;
+use sea_orm::QueryOrder;
 
 use crate::bot::bot_detail;
+use crate::clock::{MarketClock, start_clock};
+use crate::clock::time;
 use crate::enroll::enroll;
 use crate::error::AppError;
 use crate::error::Error;
@@ -34,6 +41,11 @@ async fn main() -> Result<(), Error> {
     dotenv().ok();
     let database_url =
         std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    
+    let tick_interval_seconds = std::env::var("TICK_INTERVAL_SECONDS")
+        .unwrap_or_else(|_| "1".to_string())
+        .parse::<u64>()
+        .expect("TICK_INTERVAL_SECONDS must be a valid integer");
 
     let addr = "0.0.0.0";
     let port = 4444;
@@ -42,7 +54,20 @@ async fn main() -> Result<(), Error> {
         .await
         .map_err(Error::InitDb)?;
 
-    let state = AppState::new(db_connection).await.map_err(Error::State)?;
+    let start_time = entity::stocks_history::Entity::find()
+        .order_by_asc(entity::stocks_history::Column::Time)
+        .one(&db_connection)
+        .await
+        .map_err(Error::InitDb)?
+        .map(|s| s.time)
+        .expect("No stock data found to initialize clock");
+
+    event!(Level::INFO, "Initializing market clock starting at {}", start_time);
+
+    let clock = Arc::new(RwLock::new(MarketClock::new(start_time, tick_interval_seconds)));
+    start_clock(Arc::clone(&clock));
+
+    let state = AppState::new(db_connection, clock).await.map_err(Error::State)?;
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/home") }))
@@ -50,6 +75,7 @@ async fn main() -> Result<(), Error> {
         .route("/leaderboard", get(leaderboard))
         .route("/bot/{id}", get(bot_detail))
         .route("/api/enroll", post(enroll))
+        .route("/api/time", get(time))
         .route("/api/buy", post(buy))
         .route("/api/sell", post(sell))
         .route("/api/price", get(price))
