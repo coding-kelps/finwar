@@ -1,5 +1,6 @@
 use sea_orm::DatabaseConnection;
 use std::fmt;
+use crate::clock::SharedClock;
 
 #[derive(Debug)]
 pub enum StateError {
@@ -28,15 +29,17 @@ pub struct AppState {
     pub uuid_prefix_length: usize,
     pub starting_cash: f64,
     pub starting_assets: i32,
+    pub clock: SharedClock,
 }
 
 impl AppState {
-    pub async fn new(db: DatabaseConnection) -> Result<Self, StateError> {
+    pub async fn new(db: DatabaseConnection, clock: SharedClock) -> Result<Self, StateError> {
         Ok(AppState {
             db,
             uuid_prefix_length: 18,
             starting_cash: 10000.0,
             starting_assets: 10,
+            clock,
         })
     }
 }
