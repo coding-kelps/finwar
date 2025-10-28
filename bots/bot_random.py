@@ -3,7 +3,7 @@ import random
 import time
 import os
 
-API_URL = "http://localhost:4444"
+API_URL = os.getenv("API_URL", "http://localhost:4444")
 BOT_NAME = "Rando-" + str(random.randint(1000, 9999))
 BOT_UUID = ""
 

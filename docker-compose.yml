@@ -46,18 +46,17 @@ services:
       migration:
         condition: service_completed_successfully
 
-  init-bots:
-    image: curlimages/curl:latest
-    restart: "no"
+  random-bot:
+    image: python:3.12-slim
+    restart: unless-stopped
     depends_on:
       - rust-server
-    command: >
-      sh -c "sleep 5 && 
-      curl -X POST http://rust-server:4444/api/enroll -H 'Content-Type: application/json' -d '{\"name\":\"TradeMaster\"}' &&
-      curl -X POST http://rust-server:4444/api/enroll -H 'Content-Type: application/json' -d '{\"name\":\"BullBot\"}' &&
-      curl -X POST http://rust-server:4444/api/enroll -H 'Content-Type: application/json' -d '{\"name\":\"BearBot\"}' &&
-      curl -X POST http://rust-server:4444/api/enroll -H 'Content-Type: application/json' -d '{\"name\":\"DiamondHands\"}' &&
-      curl -X POST http://rust-server:4444/api/enroll -H 'Content-Type: application/json' -d '{\"name\":\"PaperHands\"}'"
+    volumes:
+      - ./bots:/app
+    working_dir: /app
+    command: sh -c "pip install requests && python bot_random.py"
+    environment:
+      API_URL: http://rust-server:4444
 
 volumes:
   db_data:
