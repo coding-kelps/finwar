@@ -7,6 +7,25 @@ body {
   padding: 0;
 }
 
+.status-bar {
+  background: #1a1a2e;
+  border-bottom: 2px solid #009401;
+  padding: 12px 20px;
+  text-align: center;
+  font-weight: 600;
+  color: #99ff99;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-bar .divider {
+  color: #009401;
+  font-weight: 400;
+}
+
 a::before {
   content: "[";
 }

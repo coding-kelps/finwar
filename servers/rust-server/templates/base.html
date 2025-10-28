@@ -4,8 +4,20 @@
     <title>Finwar - {% block title %}{{ title }}{% endblock %}</title>
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="/static/js/lib/htmx.min.js"></script>
   </head>
   <body>
+    <div class="status-bar">
+      <span hx-get="/api/time" hx-trigger="every 1s" hx-swap="innerHTML">
+        Loading accurate time...
+      </span>
+      <span class="divider">|</span>
+      <span>
+        $<span hx-get="/api/price" hx-trigger="every 1s" hx-swap="innerHTML">
+          Loading accurate market price...
+        </span>
+      </span>
+    </div>
     <main>
       {% block content %}
       <p>Placeholder content</p>

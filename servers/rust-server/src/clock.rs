@@ -48,5 +48,6 @@ pub fn start_clock(clock: SharedClock) {
 
 pub async fn time(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let clock = state.clock.read().await;
-    Ok(clock.current_time().to_string())
+    let time_str = clock.current_time().format("%Y-%m-%d %H:%M:%S").to_string();
+    Ok(time_str)
 }
