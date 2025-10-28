@@ -3,7 +3,7 @@ use crate::{
     state::AppState,
 };
 use axum::{Json, extract::State, response::IntoResponse};
-use entity::{bot, wallet, stocks_history};
+use entity::{bot, wallet, stocks_history, orderbook};
 use num_traits::cast::ToPrimitive;
 use sea_orm::ColumnTrait;
 use sea_orm::prelude::*;
@@ -58,6 +58,8 @@ pub async fn buy(
     wallet_active.asset = Set(wallet_asset + shares_to_buy);
     wallet_active.update(&state.db).await.map_err(|_| TradeError::DatabaseError)?;
 
+    record_trade(&state.db, bot.id, "buy", shares_to_buy, current_price).await?;
+
     Ok(format!("Bought {} shares for ${:.2}", shares_to_buy, actual_cost))
 }
 
@@ -90,6 +92,8 @@ pub async fn sell(
     wallet_active.cash = Set(Decimal::from_f64_retain(wallet_cash + proceeds).unwrap());
     wallet_active.asset = Set(wallet_asset - payload.quantity);
     wallet_active.update(&state.db).await.map_err(|_| TradeError::DatabaseError)?;
+
+    record_trade(&state.db, bot.id, "sell", payload.quantity, current_price).await?;
 
     Ok(format!("Sold {} shares for ${:.2}", payload.quantity, proceeds))
 }
@@ -142,4 +146,24 @@ async fn get_wallet(
         .await
         .unwrap()
         .ok_or(TradeError::InsufficientFunds)
+}
+
+async fn record_trade(
+    db: &DatabaseConnection,
+    bot_id: i32,
+    order_type: &str,
+    quantity: i32,
+    price: f64,
+) -> Result<(), AppError> {
+    let order = orderbook::ActiveModel {
+        bot_id: Set(bot_id),
+        symbol: Set("STOCK".to_string()),
+        order_type: Set(order_type.to_string()),
+        quantity: Set(quantity),
+        price: Set(price),
+        status: Set("completed".to_string()),
+        ..Default::default()
+    };
+    order.insert(db).await.map_err(|_| TradeError::DatabaseError)?;
+    Ok(())
 }
