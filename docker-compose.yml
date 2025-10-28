@@ -48,6 +48,7 @@ services:
 
   init-bots:
     image: curlimages/curl:latest
+    restart: "no"
     depends_on:
       - rust-server
     command: >
