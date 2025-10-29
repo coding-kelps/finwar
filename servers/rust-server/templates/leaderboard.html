@@ -39,18 +39,9 @@ Each bot starts with <strong>${{ starting_cash }}</strong> in cash and <strong>{
       <th>Status</th>
     </tr>
   </thead>
-  <tbody>
-    {% for order in all_orders %}
-    <tr>
-      <td><a href="/api/bot/{{ order.bot_id_short }}">{{ order.bot_name }}</a></td>
-      <td>{{ order.symbol }}</td>
-      <td>{{ order.order_type }}</td>
-      <td>{{ order.quantity }}</td>
-      <td>${{ order.price | fmt("{:.2}") }}</td>
-      <td>{{ order.status }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
+
+    {% include "orderbook-row.html" %}
+
 </table>
 <br />
 <a href="/home">← Home</a>

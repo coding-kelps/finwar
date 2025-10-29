@@ -44,7 +44,7 @@ struct OrderWithBot {
 
 pub async fn leaderboard(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let bots = get_ranked_bots_paginated(&state.db, state.uuid_prefix_length, state.starting_cash, 5).await?;
-    let all_orders = get_all_orders(&state.db, state.uuid_prefix_length).await?;
+    let all_orders = get_all_orders_paginated(&state.db, state.uuid_prefix_length, 10).await?;
     let template = LeaderboardTemplate {
         starting_cash: state.starting_cash,
         starting_assets: state.starting_assets,
@@ -52,6 +52,29 @@ pub async fn leaderboard(State(state): State<AppState>) -> Result<impl IntoRespo
         bots,
         all_orders,
         page: 1,
+    };
+    Ok(Html(template.render()?))
+}
+
+#[derive(Template)]
+#[template(path = "orderbook-row.html")]
+struct OrderbookRowTemplate {
+    all_orders: Vec<OrderWithBot>,
+    page: usize,
+}
+
+pub async fn orderbook_page(State(state): State<AppState>, Query(params): Query<HashMap<String, String>>) -> Result<impl IntoResponse, AppError> {
+    let page = params.get("page")
+        .and_then(|p| p.parse::<u64>().ok())
+        .unwrap_or(1);
+    
+    let per_page = page * 10;
+    
+    let all_orders = get_all_orders_paginated(&state.db, state.uuid_prefix_length, per_page).await?;
+    
+    let template = OrderbookRowTemplate { 
+        all_orders,
+        page: (page + 1) as usize,
     };
     Ok(Html(template.render()?))
 }
@@ -79,8 +102,13 @@ pub async fn ranking_bot_page(State(state): State<AppState>, Query(params): Quer
     Ok(Html(template.render()?))
 }
 
-async fn get_all_orders(db: &DatabaseConnection, uuid_prefix_length: usize) -> Result<Vec<OrderWithBot>, sea_orm::DbErr> {
-    let orders = orderbook::Entity::find().all(db).await?;
+async fn get_all_orders_paginated(db: &DatabaseConnection, uuid_prefix_length: usize, limit: u64) -> Result<Vec<OrderWithBot>, sea_orm::DbErr> {
+    use sea_orm::QuerySelect;
+    
+    let orders = orderbook::Entity::find()
+        .limit(limit)
+        .all(db)
+        .await?;
     let bots = bot::Entity::find().all(db).await?;
     
     let bot_map: std::collections::HashMap<i32, bot::Model> = bots
