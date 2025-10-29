@@ -38,7 +38,7 @@ impl AppState {
             db,
             uuid_prefix_length: 18,
             starting_cash: 10000.0,
-            starting_assets: 10,
+            starting_assets: 0,
             clock,
         })
     }

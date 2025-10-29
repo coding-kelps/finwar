@@ -1,0 +1,23 @@
+<tbody id="htmx-target-ranking-bot-rows">
+  {% for bot in bots %}
+  <tr>
+    <td>{{ bot.rank }}</td>
+    <td><a href="/api/bot/{{ bot.id_short }}">{{ bot.name }}</a></td>
+    <td><strong>${{ bot.cash }}</strong></td>
+    <td><strong>{{ bot.asset }}</strong></td>
+    <td>${{ bot.profit_score | fmt("{:.2}") }}</td>
+    <td>{{ bot.profit_percentage | fmt("{:.2}") }}%</td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td>
+      <button
+        hx-get="/api/ranking/?page={{ page + 1 }}"
+        hx-target="#htmx-target-ranking-bot-rows"
+        hx-swap="outerHTML"
+      >
+        Load More
+      </button>
+    </td>
+  </tr>
+</tbody>
