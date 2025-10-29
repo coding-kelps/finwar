@@ -27,7 +27,7 @@ use crate::enroll::enroll;
 use crate::error::AppError;
 use crate::error::Error;
 use crate::home::home;
-use crate::leaderboard::{leaderboard, ranking_bot_page};
+use crate::leaderboard::{leaderboard, ranking_bot_page, orderbook_page};
 use crate::state::AppState;
 use crate::trade::{buy, price, sell};
 
@@ -75,6 +75,7 @@ async fn main() -> Result<(), Error> {
         .route("/leaderboard", get(leaderboard))
         .route("/api/bot/{id}", get(bot_detail))
         .route("/api/ranking/", get(ranking_bot_page))
+        .route("/api/orderbook/", get(orderbook_page))
         .route("/api/enroll", post(enroll))
         .route("/api/time", get(time))
         .route("/api/buy", post(buy))
