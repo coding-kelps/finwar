@@ -110,3 +110,47 @@ tr:hover td {
 :root[color-scheme="dark"] tr:hover td {
   background-color: rgba(255, 255, 255, 0.03);
 }
+
+button,
+.button {
+  background: #1a1a2e;
+  color: #009401;
+  border: 2px solid #009401;
+  padding: 4px 12px;
+  font-family: "Source Code Pro", monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button:hover,
+.button:hover {
+  background: #009401;
+  color: #0f0f23;
+  box-shadow: 0 0 10px rgba(0, 148, 1, 0.5);
+}
+
+button:active,
+.button:active {
+  transform: translateY(1px);
+  box-shadow: 0 0 5px rgba(0, 148, 1, 0.3);
+}
+
+button:disabled,
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #666;
+  color: #666;
+}
+
+button:disabled:hover,
+.button:disabled:hover {
+  background: #1a1a2e;
+  color: #666;
+  box-shadow: none;
+}
