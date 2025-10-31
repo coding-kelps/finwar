@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
+use crate::{error::AppError, state::AppState};
 use askama::Template;
 use axum::{
     extract::{Query, State},
     response::{Html, IntoResponse},
 };
-use entity::{bot, wallet, orderbook};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder};
-use crate::{error::AppError, state::AppState};
+use entity::{bot, orderbook, wallet};
+use sea_orm::{
+    DatabaseConnection, EntityTrait, QueryOrder, prelude::DateTimeWithTimeZone,
+};
 
 #[derive(Template)]
 #[template(path = "leaderboard.html")]
@@ -33,6 +35,7 @@ struct BotRank {
 
 #[derive(Debug)]
 struct OrderWithBot {
+    timestamp: String,
     bot_name: String,
     bot_id_short: String,
     symbol: String,
@@ -42,9 +45,19 @@ struct OrderWithBot {
     status: String,
 }
 
-pub async fn leaderboard(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
-    let bots = get_ranked_bots_paginated(&state.db, state.uuid_prefix_length, state.starting_cash, 5).await?;
-    let all_orders = get_all_orders_paginated(&state.db, state.uuid_prefix_length, 10).await?;
+pub async fn leaderboard(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppError> {
+    let bots = get_ranked_bots_paginated(
+        &state.db,
+        state.uuid_prefix_length,
+        state.starting_cash,
+        5,
+    )
+    .await?;
+    let all_orders =
+        get_all_orders_paginated(&state.db, state.uuid_prefix_length, 10)
+            .await?;
     let template = LeaderboardTemplate {
         starting_cash: state.starting_cash,
         starting_assets: state.starting_assets,
@@ -63,19 +76,21 @@ struct OrderbookRowTemplate {
     page: usize,
 }
 
-pub async fn orderbook_page(State(state): State<AppState>, Query(params): Query<HashMap<String, String>>) -> Result<impl IntoResponse, AppError> {
-    let page = params.get("page")
-        .and_then(|p| p.parse::<u64>().ok())
-        .unwrap_or(1);
-    
+pub async fn orderbook_page(
+    State(state): State<AppState>,
+    Query(params): Query<HashMap<String, String>>,
+) -> Result<impl IntoResponse, AppError> {
+    let page =
+        params.get("page").and_then(|p| p.parse::<u64>().ok()).unwrap_or(1);
+
     let per_page = page * 10;
-    
-    let all_orders = get_all_orders_paginated(&state.db, state.uuid_prefix_length, per_page).await?;
-    
-    let template = OrderbookRowTemplate { 
-        all_orders,
-        page: (page + 1) as usize,
-    };
+
+    let all_orders =
+        get_all_orders_paginated(&state.db, state.uuid_prefix_length, per_page)
+            .await?;
+
+    let template =
+        OrderbookRowTemplate { all_orders, page: (page + 1) as usize };
     Ok(Html(template.render()?))
 }
 
@@ -86,44 +101,54 @@ struct RankingBotRowTemplate {
     page: usize,
 }
 
-pub async fn ranking_bot_page(State(state): State<AppState>, Query(params): Query<HashMap<String, String>>) -> Result<impl IntoResponse, AppError> {
-    let page = params.get("page")
-        .and_then(|p| p.parse::<u64>().ok())
-        .unwrap_or(1);
-    
+pub async fn ranking_bot_page(
+    State(state): State<AppState>,
+    Query(params): Query<HashMap<String, String>>,
+) -> Result<impl IntoResponse, AppError> {
+    let page =
+        params.get("page").and_then(|p| p.parse::<u64>().ok()).unwrap_or(1);
+
     let per_page = page * 5;
-    
-    let bots = get_ranked_bots_paginated(&state.db, state.uuid_prefix_length, state.starting_cash, per_page).await?;
-    
-    let template = RankingBotRowTemplate { 
-        bots,
-        page: (page + 1) as usize,
-    };
+
+    let bots = get_ranked_bots_paginated(
+        &state.db,
+        state.uuid_prefix_length,
+        state.starting_cash,
+        per_page,
+    )
+    .await?;
+
+    let template = RankingBotRowTemplate { bots, page: (page + 1) as usize };
     Ok(Html(template.render()?))
 }
 
-async fn get_all_orders_paginated(db: &DatabaseConnection, uuid_prefix_length: usize, limit: u64) -> Result<Vec<OrderWithBot>, sea_orm::DbErr> {
+async fn get_all_orders_paginated(
+    db: &DatabaseConnection, uuid_prefix_length: usize, limit: u64,
+) -> Result<Vec<OrderWithBot>, sea_orm::DbErr> {
     use sea_orm::QuerySelect;
-    
+
     let orders = orderbook::Entity::find()
+        .order_by_desc(orderbook::Column::CreatedAt)
         .limit(limit)
         .all(db)
         .await?;
     let bots = bot::Entity::find().all(db).await?;
-    
-    let bot_map: std::collections::HashMap<i32, bot::Model> = bots
-        .into_iter()
-        .map(|b| (b.id, b))
-        .collect();
-    
+
+    let bot_map: std::collections::HashMap<i32, bot::Model> =
+        bots.into_iter().map(|b| (b.id, b)).collect();
+
     Ok(orders
         .into_iter()
         .filter_map(|order| {
             bot_map.get(&order.bot_id).map(|b| {
                 let uuid_str = b.uuid.to_string();
-                let bot_id_short = uuid_str.chars().take(uuid_prefix_length).collect::<String>();
-                
+                let bot_id_short = uuid_str
+                    .chars()
+                    .take(uuid_prefix_length)
+                    .collect::<String>();
+
                 OrderWithBot {
+                    timestamp: order.created_at.format("%H:%M:%S").to_string(),
                     bot_name: b.name.clone(),
                     bot_id_short,
                     symbol: order.symbol,
@@ -137,9 +162,12 @@ async fn get_all_orders_paginated(db: &DatabaseConnection, uuid_prefix_length: u
         .collect())
 }
 
-async fn get_ranked_bots_paginated(db: &DatabaseConnection, uuid_prefix_length: usize, starting_cash: f64, limit: u64) -> Result<Vec<BotRank>, sea_orm::DbErr> {
+async fn get_ranked_bots_paginated(
+    db: &DatabaseConnection, uuid_prefix_length: usize, starting_cash: f64,
+    limit: u64,
+) -> Result<Vec<BotRank>, sea_orm::DbErr> {
     use sea_orm::QuerySelect;
-    
+
     let bots = bot::Entity::find()
         .find_also_related(wallet::Entity)
         .order_by_desc(wallet::Column::Cash)
@@ -148,17 +176,26 @@ async fn get_ranked_bots_paginated(db: &DatabaseConnection, uuid_prefix_length: 
         .await?;
 
     let start_rank = 1;
-    Ok(build_bot_ranks_with_offset(bots, uuid_prefix_length, starting_cash, start_rank))
+    Ok(build_bot_ranks_with_offset(
+        bots,
+        uuid_prefix_length,
+        starting_cash,
+        start_rank,
+    ))
 }
 
-fn build_bot_ranks_with_offset(bots: Vec<(bot::Model, Option<wallet::Model>)>, uuid_prefix_length: usize, starting_cash: f64, start_rank: usize) -> Vec<BotRank> {
+fn build_bot_ranks_with_offset(
+    bots: Vec<(bot::Model, Option<wallet::Model>)>, uuid_prefix_length: usize,
+    starting_cash: f64, start_rank: usize,
+) -> Vec<BotRank> {
     let mut bot_ranks = Vec::new();
-    
+
     for (index, (bot, wallet)) in bots.into_iter().enumerate() {
         if let Some(w) = wallet {
             let uuid_str = bot.uuid.to_string();
-            let id_short = uuid_str.chars().take(uuid_prefix_length).collect::<String>();
-            
+            let id_short =
+                uuid_str.chars().take(uuid_prefix_length).collect::<String>();
+
             let current_cash = w.cash.to_string().parse::<f64>().unwrap_or(0.0);
             let profit_score = current_cash - starting_cash;
             let profit_percentage = if starting_cash > 0.0 {
@@ -166,7 +203,7 @@ fn build_bot_ranks_with_offset(bots: Vec<(bot::Model, Option<wallet::Model>)>, u
             } else {
                 0.0
             };
-            
+
             bot_ranks.push(BotRank {
                 rank: start_rank + index,
                 id_short,
@@ -178,6 +215,6 @@ fn build_bot_ranks_with_offset(bots: Vec<(bot::Model, Option<wallet::Model>)>, u
             });
         }
     }
-    
+
     bot_ranks
 }

@@ -1,25 +1,28 @@
 <tbody id="htmx-target-orderbook-rows">
-  {% for order in all_orders %}
-  <tr>
-    <td>
-      <a href="/api/bot/{{ order.bot_id_short }}">{{ order.bot_name }}</a>
-    </td>
-    <td>{{ order.symbol }}</td>
-    <td>{{ order.order_type }}</td>
-    <td>{{ order.quantity }}</td>
-    <td>${{ order.price | fmt("{:.2}") }}</td>
-    <td>{{ order.status }}</td>
-  </tr>
-  {% endfor %}
-  <tr>
-    <td>
-      <button
-        hx-get="/api/orderbook/?page={{ page + 1 }}"
-        hx-target="#htmx-target-orderbook-rows"
-        hx-swap="outerHTML"
-      >
-        Load More
-      </button>
-    </td>
-  </tr>
+    {% for order in all_orders %}
+    <tr>
+        <td>{{ order.timestamp }}</td>
+        <td>
+            <a href="/api/bot/{{ order.bot_id_short }}">{{ order.bot_name }}</a>
+        </td>
+        {#
+        <td>{{ order.symbol }}</td>
+        #}
+        <td>{{ order.order_type }}</td>
+        <td>{{ order.quantity }}</td>
+        <td>${{ order.price | fmt("{:.2}") }}</td>
+        <td>{{ order.status }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td>
+            <button
+                hx-get="/api/orderbook/?page={{ page + 1 }}"
+                hx-target="#htmx-target-orderbook-rows"
+                hx-swap="outerHTML"
+            >
+                Load More
+            </button>
+        </td>
+    </tr>
 </tbody>
