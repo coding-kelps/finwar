@@ -16,7 +16,7 @@ Based on the dataset from : [Huge Stock Market Dataset](https://www.kaggle.com/d
 Start both database and Rust server:
 
 ```bash
-cat .env.example > .env
+cat .env.dev > .env
 docker-compose up --build
 ```
 
