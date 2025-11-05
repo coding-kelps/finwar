@@ -62,7 +62,7 @@ cargo run
 **Build the image:**
 
 ```bash
-docker build -t finwar-rust-server .
+docker build -t finwar-rust-server -f ./docker/Dockerfile .
 ```
 
 **Run only the server container:**
