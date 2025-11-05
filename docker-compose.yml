@@ -36,7 +36,7 @@ services:
   rust-server:
     build:
       context: ./servers/rust-server
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     ports:
       - "4444:4444"
     environment:

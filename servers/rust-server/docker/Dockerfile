@@ -54,7 +54,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM gcr.io/distroless/cc-debian12:nonroot as runner
 
 LABEL org.opencontainers.image.authors="guilhem.sante@kelps.org"
-LABEL org.opencontainers.image.title="FinWar market API"
+LABEL org.opencontainers.image.title="FinWar Market API"
 LABEL org.opencontainers.image.description="Runs the FinWar market simulation, handling bots trading orders."
 LABEL org.opencontainers.image.licenses="MIT"
 
