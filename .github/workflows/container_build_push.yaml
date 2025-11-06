@@ -52,8 +52,8 @@ jobs:
           push: true
           platforms: "linux/arm64,linux/amd64"
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/${{ inputs.image_name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/${{ inputs.image_name }}:${{ inputs.version }}
+            ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest
+            ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:${{ inputs.version }}
           labels: |
             org.opencontainers.image.created=${{ steps.timestamp.outputs.current_time }}
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
