@@ -1,6 +1,6 @@
 [package]
 name = "finwar-market"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Coding Kelps <contact@kelps.org>"]
 autotests = true
 categories = ["finance", "simulation"]
@@ -11,7 +11,7 @@ keywords = ["finance", "market", "server"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/coding-kelps/finwar"
-rust-version = "1.89"
+rust-version = "1.91"
 
 [workspace]
 members = [".", "entity", "migration"]

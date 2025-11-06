@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.89-slim-bookworm AS base
+FROM docker.io/library/rust:1.91-slim-bookworm AS base
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
