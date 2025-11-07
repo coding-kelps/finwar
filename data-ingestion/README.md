@@ -10,7 +10,7 @@ Data pipeline to ingest stock market datasets into a Time Series Database.
 2. Defines the required environment variables
 
 ```sh
-export POLYGON_API_KEY=...
+export MASSIVE_API_KEY=...
 
 export POSTGRES_USER="finwar"
 export POSTGRES_PASSWORD="password"
@@ -21,7 +21,7 @@ export POSTGRES_DB="finwar"
 
 
 > [!TIP]
-> You can get a Polygon API key for free by creating an account on [polygon.io](https://polygon.io/).
+> You can get a Massive API key for free by creating an account on [massive.com](https://massive.com/).
 
 ### Installing dependencies
 
@@ -57,4 +57,4 @@ uv run dg launch --assets download_stocks_intraday_history,load_stocks_intraday_
 *here the pipeline is launched to collect the intraday history data from Apple Inc. on the last week of september.*
 
 > [!WARNING]  
-> The Polygon API free account only goes up to 5 req/min so beware in the number of parition you run.
+> The Massive API free account only goes up to 5 req/min so beware in the number of parition you run.

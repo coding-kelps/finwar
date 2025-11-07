@@ -2,7 +2,7 @@ FROM docker.io/library/python:3.13.7-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=0
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.9.6 /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -14,7 +14,12 @@ COPY . /app
 
 RUN uv sync --no-dev --locked
 
-FROM docker.io/library/python:3.13.7-slim AS runtime
+FROM docker.io/library/python:3.13.7-slim AS runner
+
+LABEL org.opencontainers.image.authors="guilhem.sante@kelps.org"
+LABEL org.opencontainers.image.title="FinWar Data Ingestion User Code"
+LABEL org.opencontainers.image.description="Data pipeline to ingest stock market datasets into a Time Series Database."
+LABEL org.opencontainers.image.licenses="MIT"
 
 RUN groupadd --system --gid 999 appuser \
  && useradd --system --gid 999 --uid 999 --create-home appuser

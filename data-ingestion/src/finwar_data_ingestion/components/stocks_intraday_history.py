@@ -4,16 +4,16 @@ from dagster import AssetExecutionContext
 from datetime import datetime
 from typing import Literal, List
 
-from finwar_data_ingestion.resources import PostgreSQLResource, PolygonResource
+from finwar_data_ingestion.resources import PostgreSQLResource, MassiveResource
 
 
-MAX_POLYGON_REQ_RETRY = 3
+MAX_MASSIVE_REQ_RETRY = 3
 
 
 class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 	"""Represents historical stock quotation for one or more ticker symbols.
 
-	The data is retrieved from the [Polygon.io](https://polygon.io) API and returned as a
+	The data is retrieved from the [Massive](https://massive.com) API and returned as a
 	:class:`pandas.DataFrame`. The data also contains the trading volume.
 	It is then loaded as a TimescaleDB table.
 
@@ -25,7 +25,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 	    time_partitioning (Literal["daily", "weekly", "monthly"]): The partitioning frequency
 	        for the data retrieval. The partitioning unit should be shorter or equal to the
 	        requested time window. Default is ``"monthly"``.
-	    polygon_api_key (str): API key for authenticating with the Polygon.io API.
+	    massive_api_key (str): API key for authenticating with the Massive API.
 	    precision (Literal["second", "minute", "day", "week", "month", "quarter", "year"]):
 	        The granularity of the bars. Must be finer than or equal to the requested
 	        time window. Default is ``"day"``.
@@ -42,7 +42,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 	start_date: str
 	end_date: str | None = None
 	time_partitioning: Literal['daily', 'weekly', 'monthly'] = 'monthly'
-	polygon_api_key: str
+	massive_api_key: str
 	precision: Literal['second', 'minute', 'day', 'week', 'month', 'quarter', 'year'] = 'day'
 	adjusted: bool = False
 	table_name: str = 'stocks_history'
@@ -57,7 +57,7 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 		return dg.ComponentTypeSpec(
 			description=cls.__doc__,
 			owners=['contact@kelps.org', 'guilhem.sante@kelps.org'],
-			tags=['stocks', 'intraday', 'polygon.io', 'timescaledb'],
+			tags=['stocks', 'intraday', 'massive.com', 'timescaledb'],
 		)
 
 	def build_defs(self, context: dg.ComponentLoadContext) -> dg.Definitions:
@@ -84,57 +84,57 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 			group_name='ingestion',
 			code_version='0.3.0',
 			description="""
-            Extract the stocks intraday value from the Polygon API.
+            Extract the stocks intraday value from the Massive API.
           """,
 			partitions_def=partitions_matrix,
 		)
 		def download_stocks_intraday_history(
 			context: AssetExecutionContext,
-			polygon: PolygonResource,
+			massive: MassiveResource,
 		) -> dg.MaterializeResult:
 			partition_keys = context.partition_key.keys_by_dimension
 			time_window = time_partitioning.time_window_for_partition_key(partition_keys['time'])
 			symbol = partition_keys['symbol']
 
-			with polygon.get_client() as client:
-				for attempt in range(0, MAX_POLYGON_REQ_RETRY):
-					try:
-						res = client.get_aggregate_bars(
-							symbol=symbol,
-							multiplier=1,
-							adjusted=self.adjusted,
-							timespan=self.precision,
-							from_date=time_window.start,
-							to_date=time_window.end,
-							limit=50000,  # API max limit
-						)
+			client = massive.get_client()
 
-						if res['status'] == 'ERROR' or res['results'] is None:
-							raise Exception(res['error'])
-						break
-					except Exception as e:
-						if attempt == MAX_POLYGON_REQ_RETRY:
-							raise dg.Failure(
-								description=f'failed to get intraday stock data from Polygon API: {e}'
-							)
-						else:
-							context.log.warning(
-								f'polygon.io API request failed (attempt n°{attempt + 1}/{MAX_POLYGON_REQ_RETRY}): {e}',
-							)
+			for attempt in range(0, MAX_MASSIVE_REQ_RETRY):
+				try:
+					aggs = []
+					for a in client.list_aggs(
+						ticker=symbol,
+						multiplier=1,
+						adjusted=self.adjusted,
+						timespan=self.precision,
+						from_=time_window.start,
+						to=time_window.end,
+						limit=50000,  # API max limit
+					):
+						aggs.append(a)
+
+				except Exception as e:
+					if attempt == MAX_MASSIVE_REQ_RETRY:
+						raise dg.Failure(
+							description=f'failed to get intraday stock data from Massive API: {e}'
+						)
+					else:
+						context.log.warning(
+							f'Massive API request failed (attempt n°{attempt + 1}/{MAX_MASSIVE_REQ_RETRY}): {e}',
+						)
 
 			return dg.MaterializeResult(
 				value=pd.DataFrame(
 					[
 						{
-							'timestamp': datetime.fromtimestamp(bar['t'] / 1000),
+							'timestamp': datetime.fromtimestamp(bar.timestamp / 1000),
 							'symbol': symbol,
-							'open': bar['o'],
-							'high': bar['h'],
-							'low': bar['l'],
-							'close': bar['c'],
-							'volume': bar['v'],
+							'open': bar.open,
+							'high': bar.high,
+							'low': bar.low,
+							'close': bar.close,
+							'volume': bar.volume,
 						}
-						for bar in res['results']
+						for bar in aggs
 					]
 				),
 				metadata={
@@ -222,8 +222,8 @@ class StocksIntradayHistoryComponent(dg.Component, dg.Model, dg.Resolvable):
 				load_stocks_intraday_history,
 			],
 			resources={
-				'polygon': PolygonResource(
-					api_key=self.polygon_api_key,
+				'massive': MassiveResource(
+					api_key=self.massive_api_key,
 				),
 				'postgresql': PostgreSQLResource(
 					username=self.timescaledb_username,
