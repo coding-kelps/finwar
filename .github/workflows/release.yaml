@@ -53,3 +53,14 @@ jobs:
       image_name: market-api
       version: ${{ needs.extract-version.outputs.version }}
       ref: ${{ github.sha }}
+
+  build-push-rando-bot:
+    needs: extract-version
+    if: needs.extract-version.outputs.project == 'rando-bot'
+    uses: ./.github/workflows/container_build_push.yaml
+    with:
+      context: bots/rando
+      dockerfile: docker/Dockerfile
+      image_name: rando-bot
+      version: ${{ needs.extract-version.outputs.version }}
+      ref: ${{ github.sha }}
