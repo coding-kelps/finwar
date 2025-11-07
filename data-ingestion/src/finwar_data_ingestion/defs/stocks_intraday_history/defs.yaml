@@ -57,7 +57,7 @@ attributes:
     - CAT
     - AMGN
     - NEE
-  polygon_api_key: "{{ env.POLYGON_API_KEY }}"
+  massive_api_key: "{{ env.MASSIVE_API_KEY }}"
   timescaledb_username: "{{ env.POSTGRES_USER }}"
   timescaledb_password: "{{ env.POSTGRES_PASSWORD }}"
   timescaledb_host: "{{ env.POSTGRES_HOST }}"
@@ -66,7 +66,7 @@ attributes:
 
 requirements:
   env:
-    - POLYGON_API_KEY
+    - MASSIVE_API_KEY
     - POSTGRES_USER
     - POSTGRES_PASSWORD
     - POSTGRES_HOST
