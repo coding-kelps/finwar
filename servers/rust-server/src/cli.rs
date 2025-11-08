@@ -1,7 +1,5 @@
 use clap::{Parser, Subcommand};
-use dotenvy::dotenv;
 use migration::{Migrator, MigratorTrait};
-use sea_orm::DatabaseConnection;
 
 /// Simple CLI for the market server. Defaults to `serve` when no subcommand
 /// is provided.
@@ -9,7 +7,7 @@ use sea_orm::DatabaseConnection;
 #[command(author, version, about = "Finwar market server CLI")]
 pub struct Opts {
     #[command(subcommand)]
-    pub command: Option<Command>,
+    pub command: Command,
 }
 
 #[derive(Debug, Subcommand)]
@@ -20,13 +18,30 @@ pub enum Command {
     Migrate,
 }
 
-pub async fn run(db: DatabaseConnection) -> Result<(), crate::error::Error> {
+pub async fn run() -> Result<(), crate::error::Error> {
     let opts = Opts::parse();
-    match opts.command.unwrap_or(Command::Serve) {
-        Command::Serve => crate::run_server(db).await,
+
+    match opts.command {
+        Command::Serve => {
+            let database_url =
+                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+            let db_connection = sea_orm::Database::connect(&database_url)
+                .await
+                .map_err(crate::error::Error::InitDb)?;
+
+            crate::run_server(db_connection).await
+        },
         Command::Migrate => {
-            dotenv().ok();
-            Migrator::up(&db, None).await?;
+            let database_url =
+                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+            let db_connection = sea_orm::Database::connect(&database_url)
+                .await
+                .map_err(crate::error::Error::InitDb)?;
+
+            Migrator::up(&db_connection, None).await?;
+
             Ok(())
         },
     }

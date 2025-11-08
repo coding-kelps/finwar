@@ -8,7 +8,7 @@ use axum::{
 };
 use entity::{bot, orderbook, wallet};
 use sea_orm::{
-    DatabaseConnection, EntityTrait, QueryOrder, prelude::DateTimeWithTimeZone,
+    DatabaseConnection, EntityTrait, QueryOrder,
 };
 
 #[derive(Template)]
@@ -38,7 +38,7 @@ struct OrderWithBot {
     timestamp: String,
     bot_name: String,
     bot_id_short: String,
-    symbol: String,
+    _symbol: String,
     order_type: String,
     quantity: i32,
     price: f64,
@@ -151,7 +151,7 @@ async fn get_all_orders_paginated(
                     timestamp: order.created_at.format("%H:%M:%S").to_string(),
                     bot_name: b.name.clone(),
                     bot_id_short,
-                    symbol: order.symbol,
+                    _symbol: order.symbol,
                     order_type: order.order_type,
                     quantity: order.quantity,
                     price: order.price,

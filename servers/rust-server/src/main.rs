@@ -42,15 +42,8 @@ async fn main() -> Result<(), Error> {
         .with_test_writer()
         .init();
 
-    let database_url =
-        std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    let db_connection = sea_orm::Database::connect(&database_url)
-        .await
-        .map_err(Error::InitDb)?;
-
     // Delegate to cli module to choose between server or migration commands.
-    cli::run(db_connection).await
+    cli::run().await
 }
 
 /// Start the HTTP server. Separated out so `main` can dispatch to either
