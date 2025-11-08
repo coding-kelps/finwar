@@ -22,13 +22,13 @@ services:
       retries: 5
 
   migration:
-    image: rust:1.91-slim-bookworm
-    working_dir: /app/migration
-    volumes:
-      - ./servers/rust-server:/app
-    command: sh -c "apt-get update && apt-get install -y pkg-config libssl-dev && cargo run"
+    build:
+      context: ./servers/rust-server
+      dockerfile: docker/Dockerfile
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
+      RUST_LOG: info
+    command: migrate
     depends_on:
       timescaledb:
         condition: service_healthy
@@ -42,6 +42,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
       RUST_LOG: info
+    command: serve
     depends_on:
       migration:
         condition: service_completed_successfully
