@@ -46,17 +46,28 @@ services:
       migration:
         condition: service_completed_successfully
 
-  random-bot:
-    image: python:3.12-slim
-    restart: unless-stopped
+  rust-server-healthchecker:
+    image: docker.io/library/busybox:stable-uclibc
+    command: ["sh", "-c", "tail -f /dev/null"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --tries=1 http://rust-server:4444/api/time || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
     depends_on:
       - rust-server
-    volumes:
-      - ./bots:/app
-    working_dir: /app
-    command: sh -c "pip install requests && python bot_random.py"
+
+  rando-bot:
+    build:
+      context: ./bots/rando
+      dockerfile: docker/Dockerfile
     environment:
-      API_URL: http://rust-server:4444
+      FINWAR_MARKET_API_ENDPOINT: http://rust-server:4444
+    restart: unless-stopped
+    depends_on:
+      rust-server-healthchecker:
+        condition: service_healthy
 
 volumes:
   db_data:
