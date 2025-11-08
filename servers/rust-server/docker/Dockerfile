@@ -70,4 +70,6 @@ ENV RUST_LOG=info
 
 EXPOSE 4444
 
-CMD ["/app/finwar-market"]
+ENTRYPOINT ["/app/finwar-market"]
+
+CMD ["serve"]
