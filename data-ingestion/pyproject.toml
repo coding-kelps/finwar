@@ -1,6 +1,6 @@
 [project]
 name = "finwar_data_ingestion"
-version = "0.3.0"
+version = "0.3.1"
 description = "Data pipeline to ingest stock market datasets into a Time Series Database"
 authors = [
     { name = "Coding Kelps" }

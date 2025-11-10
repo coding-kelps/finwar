@@ -24,6 +24,11 @@ LABEL org.opencontainers.image.licenses="MIT"
 RUN groupadd --system --gid 999 appuser \
  && useradd --system --gid 999 --uid 999 --create-home appuser
 
+ENV DAGSTER_HOME=/app/.dagster
+
+RUN mkdir -p /app/.dagster \
+ && chown -R 999:999 /app/.dagster
+
 COPY --from=builder --chown=appuser:appuser /app /app
  
 ENV PATH="/app/.venv/bin:$PATH"
