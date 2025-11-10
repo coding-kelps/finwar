@@ -24,7 +24,8 @@ pub async fn run() -> Result<(), crate::error::Error> {
     match opts.command {
         Command::Serve => {
             let database_url =
-                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+                std::env::var("FINWAR_MARKET_DATABASE_URL")
+                    .expect("FINWAR_MARKET_DATABASE_URL must be set");
 
             let db_connection = sea_orm::Database::connect(&database_url)
                 .await
@@ -34,7 +35,8 @@ pub async fn run() -> Result<(), crate::error::Error> {
         },
         Command::Migrate => {
             let database_url =
-                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+                std::env::var("FINWAR_MARKET_DATABASE_URL")
+                    .expect("FINWAR_MARKET_DATABASE_URL must be set");
 
             let db_connection = sea_orm::Database::connect(&database_url)
                 .await

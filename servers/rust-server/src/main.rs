@@ -12,15 +12,11 @@ pub mod trade;
 
 use axum::{Router, response::Redirect, routing::get, routing::post};
 use dotenvy::dotenv;
-use sea_orm::DatabaseConnection;
-use sea_orm::EntityTrait;
-use sea_orm::QueryOrder;
+use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder, QueryFilter, ColumnTrait};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
-use tracing::Level;
-use tracing::event;
+use tower_http::{services::ServeDir, trace::TraceLayer};
+use tracing::{Level, event};
 
 use crate::bot::bot_detail;
 use crate::clock::time;
@@ -49,16 +45,25 @@ async fn main() -> Result<(), Error> {
 /// Start the HTTP server. Separated out so `main` can dispatch to either
 /// the server or other management subcommands (like `migrate`).
 pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
-    let tick_interval_seconds = std::env::var("TICK_INTERVAL_SECONDS")
-        .unwrap_or_else(|_| "1".to_string())
-        .parse::<u64>()
-        .expect("TICK_INTERVAL_SECONDS must be a valid integer");
+    let addr = std::env::var("FINWAR_MARKET_ADDR")
+        .unwrap_or_else(|_| "0.0.0.0".to_string());
 
-    let addr = "0.0.0.0";
-    let port = 4444;
+    let port = std::env::var("FINWAR_MARKET_PORT")
+        .unwrap_or_else(|_| "4444".to_string())
+        .parse::<u64>()
+        .expect("FINWAR_MARKET_PORT must be a valid integer");
+
+    let tick_interval_seconds = std::env::var("FINWAR_MARKET_INTERVAL_SECONDS")
+        .unwrap_or_else(|_| "60".to_string())
+        .parse::<u64>()
+        .expect("FINWAR_MARKET_INTERVAL_SECONDS must be a valid integer");    
+
+    let target_symbol = std::env::var("FINWAR_MARKET_TARGET_SYMBOL")
+        .unwrap_or_else(|_| "AAPL".to_string());
 
     let start_time = entity::stocks_history::Entity::find()
         .order_by_asc(entity::stocks_history::Column::Time)
+        .filter(entity::stocks_history::Column::Symbol.eq(&target_symbol))
         .one(&db)
         .await
         .map_err(Error::InitDb)?
@@ -73,7 +78,7 @@ pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
     )));
     start_clock(Arc::clone(&clock));
 
-    let state = AppState::new(db, clock).await.map_err(Error::State)?;
+    let state = AppState::new(db, clock, target_symbol).await.map_err(Error::State)?;
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/home") }))

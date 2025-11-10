@@ -30,16 +30,18 @@ pub struct AppState {
     pub starting_cash: f64,
     pub starting_assets: i32,
     pub clock: SharedClock,
+    pub target_symbol: String,
 }
 
 impl AppState {
-    pub async fn new(db: DatabaseConnection, clock: SharedClock) -> Result<Self, StateError> {
+    pub async fn new(db: DatabaseConnection, clock: SharedClock, target_symbol: String) -> Result<Self, StateError> {
         Ok(AppState {
             db,
             uuid_prefix_length: 18,
             starting_cash: 10000.0,
             starting_assets: 0,
             clock,
+            target_symbol,
         })
     }
 }

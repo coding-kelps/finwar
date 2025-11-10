@@ -28,7 +28,7 @@ impl MarketClock {
     }
 
     pub fn advance(&mut self, seconds: u64) {
-        self.current_time = self.current_time + Duration::from_secs(seconds * 60);
+        self.current_time = self.current_time + Duration::from_secs(seconds);
     }
 }
 

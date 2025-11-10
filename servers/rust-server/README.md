@@ -89,3 +89,13 @@ or in powershell:
 ```powershell
 Invoke-RestMethod -Uri http://localhost:4444/api/enroll -Method POST -ContentType "application/json" -Body '{"name":"bot0"}'
 ```
+
+## Configuration
+
+| Name                                  | Description                                                           | Default                 |
+| :------------------------------------ | :-------------------------------------------------------------------- | :---------------------: |
+| FINWAR_MARKET_ADDR                    | The HTTP server address.                                              | `0.0.0.0`               |
+| FINWAR_MARKET_PORT                    | The HTTP server port                                                  | `4444`                  |
+| FINWAR_MARKET_INTERVAL_SECONDS        | The internal time passed (in seconds) in the Market each real second. | `60`                    |
+| FINWAR_MARKET_TARGET_SYMBOL           | The target stock symbol on which the Market simulation is based on.   | `AAPL`                  |
+| FINWAR_MARKET_DATABASE_URL            | The URL with authentication information of the backend database.      |                         |
