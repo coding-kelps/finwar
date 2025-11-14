@@ -33,7 +33,7 @@ fn calculate_ma(period: usize, data: &[Vec<f64>]) -> Vec<f64> {
 
 pub async fn chart(state: &AppState) -> Result<Chart, AppError> {
     let records = stocks_history::Entity::find()
-        .filter(stocks_history::Column::Symbol.eq("AAPL"))
+        .filter(stocks_history::Column::Symbol.eq(&state.target_symbol))
         .order_by_asc(stocks_history::Column::Time)
         .limit(300)
         .all(&state.db)

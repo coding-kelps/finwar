@@ -102,6 +102,7 @@ async fn get_current_price(state: &AppState) -> Result<f64, AppError> {
     let current_time = state.clock.read().await.current_time();
     
     let stock = stocks_history::Entity::find()
+        .filter(stocks_history::Column::Symbol.eq(&state.target_symbol))
         .filter(stocks_history::Column::Time.lte(current_time))
         .order_by_desc(stocks_history::Column::Time)
         .one(&state.db)

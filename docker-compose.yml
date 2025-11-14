@@ -26,7 +26,7 @@ services:
       context: ./servers/rust-server
       dockerfile: docker/Dockerfile
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
+      FINWAR_MARKET_DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
       RUST_LOG: info
     command: migrate
     depends_on:
@@ -40,7 +40,8 @@ services:
     ports:
       - "4444:4444"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
+      FINWAR_MARKET_DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
+      FINWAR_MARKET_TARGET_TICKER: NVDA
       RUST_LOG: info
     command: serve
     depends_on:
