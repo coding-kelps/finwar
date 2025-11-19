@@ -1,5 +1,6 @@
 pub mod bot;
 pub mod cli;
+pub mod config;
 pub mod clock;
 pub mod data;
 pub mod enroll;
@@ -12,17 +13,19 @@ pub mod trade;
 
 use axum::{Router, response::Redirect, routing::get, routing::post};
 use dotenvy::dotenv;
-use sea_orm::DatabaseConnection;
-use sea_orm::EntityTrait;
-use sea_orm::QueryOrder;
+use sea_orm::{ColumnTrait, EntityTrait, QueryOrder, QueryFilter};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing::event;
+use clap::Parser;
+use migration::{Migrator, MigratorTrait};
 
 use crate::bot::bot_detail;
+use crate::cli::{Args, Commands};
+use crate::config::Config;
 use crate::clock::time;
 use crate::clock::{MarketClock, start_clock};
 use crate::enroll::enroll;
@@ -36,29 +39,51 @@ use crate::trade::{buy, price, sell};
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     dotenv().ok();
+    let args = Args::parse();
+    let cfg = Config::from_args(args.clone());
 
-    tracing_subscriber::fmt()
-        .with_max_level(Level::DEBUG)
-        .with_test_writer()
-        .init();
+    match cfg.log.level.parse::<Level>() {
+        Ok(level) => {
+            tracing_subscriber::fmt()
+                .with_max_level(level)
+                .with_test_writer()
+                .init();
+        },
+        Err(_) => {
+            tracing_subscriber::fmt()
+                .with_max_level(Level::INFO)
+                .with_test_writer()
+                .init();
 
-    // Delegate to cli module to choose between server or migration commands.
-    cli::run().await
+            event!(Level::WARN, "log level wrongly set at \"{}\" continuing server at default level \"info\"", cfg.log.level);
+        }
+    }
+
+    match args.command {
+        Commands::Serve { .. } => serve(cfg).await?,
+        Commands::Migrate { .. } => migrate(cfg).await?,
+    }
+
+    Ok(())
 }
 
-/// Start the HTTP server. Separated out so `main` can dispatch to either
-/// the server or other management subcommands (like `migrate`).
-pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
-    let tick_interval_seconds = std::env::var("TICK_INTERVAL_SECONDS")
-        .unwrap_or_else(|_| "1".to_string())
-        .parse::<u64>()
-        .expect("TICK_INTERVAL_SECONDS must be a valid integer");
-
-    let addr = "0.0.0.0";
-    let port = 4444;
+/// Start the HTTP server.
+async fn serve(cfg: Config) -> Result<(), Error> {
+    let db = sea_orm::Database::connect(
+    format!(
+            "postgresql://{}:{}@{}:{}/{}",
+            cfg.database.user.expose(),
+            cfg.database.password.expose(),
+            cfg.database.host,
+            cfg.database.port,
+            cfg.database.name,
+        ))
+        .await
+        .map_err(crate::error::Error::InitDb)?;
 
     let start_time = entity::stocks_history::Entity::find()
         .order_by_asc(entity::stocks_history::Column::Time)
+        .filter(entity::stocks_history::Column::Symbol.eq(&cfg.tracked_symbol))
         .one(&db)
         .await
         .map_err(Error::InitDb)?
@@ -69,14 +94,15 @@ pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
 
     let clock = Arc::new(RwLock::new(MarketClock::new(
         start_time,
-        tick_interval_seconds,
+        cfg.interval_seconds,
     )));
     start_clock(Arc::clone(&clock));
 
-    let state = AppState::new(db, clock).await.map_err(Error::State)?;
+    let state = AppState::new(db, clock, cfg.tracked_symbol.clone()).await.map_err(Error::State)?;
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/home") }))
+        .route("/health", get(|| async { "OK" }))
         .route("/home", get(home))
         .route("/leaderboard", get(leaderboard))
         .route("/api/bot/{id}", get(bot_detail))
@@ -92,11 +118,30 @@ pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
         .with_state(state)
         .layer(TraceLayer::new_for_http());
 
-    let listener = tokio::net::TcpListener::bind(format!("{addr}:{port}"))
+    let listener = tokio::net::TcpListener::bind(format!("{}:{}", cfg.server.host, cfg.server.port))
         .await
         .map_err(Error::Bind)?;
-    event!(Level::INFO, "server started and listening on http://{addr}:{port}");
+    event!(Level::INFO, "server started and listening on http://{}:{}", cfg.server.host, cfg.server.port);
 
     axum::serve(listener, app).await.map_err(Error::Run)?;
+    Ok(())
+}
+
+// Migrate the entity to the database
+async fn migrate(cfg: Config) -> Result<(), Error> {
+    let db = sea_orm::Database::connect(
+    format!(
+            "postgresql://{}:{}@{}:{}/{}",
+            cfg.database.user.expose(),
+            cfg.database.password.expose(),
+            cfg.database.host,
+            cfg.database.port,
+            cfg.database.name,
+        ))
+        .await
+        .map_err(crate::error::Error::InitDb)?;
+
+    Migrator::up(&db, None).await?;
+
     Ok(())
 }

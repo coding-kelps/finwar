@@ -1,48 +1,97 @@
 use clap::{Parser, Subcommand};
-use migration::{Migrator, MigratorTrait};
+use std::path::PathBuf;
 
-/// Simple CLI for the market server. Defaults to `serve` when no subcommand
-/// is provided.
-#[derive(Debug, Parser)]
+macro_rules! env_prefix {
+    ($name:expr) => {
+        concat!("FINWAR_MARKET_", $name)
+    };
+}
+
+/// Simple CLI for the market server.
+#[derive(Debug, Parser, Clone)]
 #[command(author, version, about = "Finwar market server CLI")]
-pub struct Opts {
-    #[command(subcommand)]
-    pub command: Command,
+pub struct Args {
+  /// Log level (trace, debug, info, warn, error)
+  #[arg(long, env = env_prefix!("LOG_LEVEL"), default_value = "info")]
+  pub log_level: String,
+
+  #[command(subcommand)]
+  pub command: Commands,
 }
 
-#[derive(Debug, Subcommand)]
-pub enum Command {
-    /// Start the HTTP server (default)
-    Serve,
-    /// Run database migrations using the workspace `migration` member
-    Migrate,
-}
+#[derive(Subcommand, Debug, Clone)]
+pub enum Commands {
+    Serve {
+        /// Host to bind to
+        #[arg(long, env = env_prefix!("HOST"), default_value = "0.0.0.0")]
+        host: String,
 
-pub async fn run() -> Result<(), crate::error::Error> {
-    let opts = Opts::parse();
+        /// Port to bind to
+        #[arg(short, long, env = env_prefix!("PORT"), default_value = "4444")]
+        port: u16,
 
-    match opts.command {
-        Command::Serve => {
-            let database_url =
-                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        /// Database user
+        #[arg(long, env = env_prefix!("DB_USER"), required_unless_present = "db_user_file")]
+        db_user: Option<String>,
 
-            let db_connection = sea_orm::Database::connect(&database_url)
-                .await
-                .map_err(crate::error::Error::InitDb)?;
+        /// Database user file path
+        #[arg(long, env = env_prefix!("DB_USER_FILE"), required_unless_present = "db_user")]
+        db_user_file: Option<PathBuf>,
 
-            crate::run_server(db_connection).await
-        },
-        Command::Migrate => {
-            let database_url =
-                std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        /// Database password
+        #[arg(long, env = env_prefix!("DB_PASSWORD"), required_unless_present = "db_password_file")]
+        db_password: Option<String>,
 
-            let db_connection = sea_orm::Database::connect(&database_url)
-                .await
-                .map_err(crate::error::Error::InitDb)?;
+        /// Database password file path
+        #[arg(long, env = env_prefix!("DB_PASSWORD_FILE"), required_unless_present = "db_password")]
+        db_password_file: Option<PathBuf>,
 
-            Migrator::up(&db_connection, None).await?;
+        /// Database host
+        #[arg(long, env = env_prefix!("DB_HOST"), default_value = "localhost")]
+        db_host: String,
+    
+        /// Database port
+        #[arg(long, env = env_prefix!("DB_PORT"), default_value = "5432")]
+        db_port: u16,
 
-            Ok(())
-        },
+        /// Database name
+        #[arg(long, env = env_prefix!("DB_NAME"), default_value = "postgres")]
+        db_name: String,
+
+        #[arg(long, env = env_prefix!("TRACKED_SYMBOL"), default_value = "AAPL")]
+        tracked_symbol: String,
+
+        #[arg(long, env = env_prefix!("INTERVAL_SECONDS"), default_value = "60")]
+        interval_seconds: u64
+    },
+
+    Migrate {
+        /// Database user
+        #[arg(long, env = env_prefix!("DB_USER"), required_unless_present = "db_user_file")]
+        db_user: Option<String>,
+
+        /// Database user file path
+        #[arg(long, env = env_prefix!("DB_USER_FILE"), required_unless_present = "db_user")]
+        db_user_file: Option<PathBuf>,
+
+        /// Database password
+        #[arg(long, env = env_prefix!("DB_PASSWORD"), required_unless_present = "db_password_file")]
+        db_password: Option<String>,
+
+        /// Database password file path
+        #[arg(long, env = env_prefix!("DB_PASSWORD_FILE"), required_unless_present = "db_password")]
+        db_password_file: Option<PathBuf>,
+
+        /// Database host
+        #[arg(long, env = env_prefix!("DB_HOST"), default_value = "localhost")]
+        db_host: String,
+    
+        /// Database port
+        #[arg(long, env = env_prefix!("DB_PORT"), default_value = "5432")]
+        db_port: u16,
+
+        /// Database name
+        #[arg(long, env = env_prefix!("DB_NAME"), default_value = "postgres")]
+        db_name: String,
     }
 }

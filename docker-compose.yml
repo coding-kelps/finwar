@@ -26,8 +26,10 @@ services:
       context: ./servers/rust-server
       dockerfile: docker/Dockerfile
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
-      RUST_LOG: info
+      FINWAR_MARKET_DB_USER: ${POSTGRES_USER:-finwar}
+      FINWAR_MARKET_DB_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      FINWAR_MARKET_DB_HOST: timescaledb
+      FINWAR_MARKET_DB_NAME: ${POSTGRES_DB:-finwar}
     command: migrate
     depends_on:
       timescaledb:
@@ -40,8 +42,11 @@ services:
     ports:
       - "4444:4444"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-finwar}:${POSTGRES_PASSWORD:-password}@timescaledb:5432/${POSTGRES_DB:-finwar}
-      RUST_LOG: info
+      FINWAR_MARKET_DB_USER: ${POSTGRES_USER:-finwar}
+      FINWAR_MARKET_DB_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      FINWAR_MARKET_DB_HOST: timescaledb
+      FINWAR_MARKET_DB_NAME: ${POSTGRES_DB:-finwar}
+      FINWAR_MARKET_TRACKED_TICKER: AAPL
     command: serve
     depends_on:
       migration:
@@ -51,7 +56,7 @@ services:
     image: docker.io/library/busybox:stable-uclibc
     command: ["sh", "-c", "tail -f /dev/null"]
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider --tries=1 http://rust-server:4444/api/time || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider --tries=1 http://rust-server:4444/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
