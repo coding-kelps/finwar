@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 requires-python = "==3.13.*"
 dependencies = [
-    "dagster==1.11.10",
+    "dagster>=1.11.10",
     "dagster-docker>=0.27.10",
     "dagster-postgres>=0.27.10",
     "massive>=2.0.1",
