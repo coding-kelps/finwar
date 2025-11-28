@@ -46,6 +46,14 @@ pub fn start_clock(clock: SharedClock) {
     });
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/time",
+    description = "Get the current time of the financial market simulation clock.",
+    responses(
+        (status = 200, description = "Succesfully retrieved market time"),
+    )
+)]
 pub async fn time(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let clock = state.clock.read().await;
     let time_str = clock.current_time().format("%Y-%m-%d %H:%M:%S").to_string();

@@ -19,6 +19,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 use tracing::Level;
 use tracing::event;
 
@@ -45,6 +47,24 @@ async fn main() -> Result<(), Error> {
     // Delegate to cli module to choose between server or migration commands.
     cli::run().await
 }
+
+#[derive(OpenApi)]
+#[openapi(
+    info(title = "FinWar Market API"),
+    paths(
+        enroll::enroll,
+        clock::time,
+        trade::buy,
+        trade::sell,
+        trade::price,
+    ),
+    components(
+        schemas(enroll::EnrollPayload),
+        schemas(trade::BuyOrderInput),
+        schemas(trade::SellOrderInput),
+    ),
+)]
+struct ApiDoc;
 
 /// Start the HTTP server. Separated out so `main` can dispatch to either
 /// the server or other management subcommands (like `migrate`).
@@ -88,6 +108,7 @@ pub async fn run_server(db: DatabaseConnection) -> Result<(), Error> {
         .route("/api/sell", post(sell))
         .route("/api/price", get(price))
         .nest_service("/static", ServeDir::new("static"))
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()))
         .fallback(|| async { AppError::NotFound })
         .with_state(state)
         .layer(TraceLayer::new_for_http());
