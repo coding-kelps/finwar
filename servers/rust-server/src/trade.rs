@@ -9,19 +9,31 @@ use sea_orm::ColumnTrait;
 use sea_orm::prelude::*;
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, QueryOrder, ActiveModelTrait, Set};
 use uuid::Uuid;
+use serde::{Serialize, Deserialize};
+use utoipa::ToSchema;
 
-#[derive(serde::Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 pub struct BuyOrderInput {
     pub bot_uuid: String,
     pub investment: f64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 pub struct SellOrderInput {
     pub bot_uuid: String,
     pub quantity: i32,
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/buy",
+    description = "Buy the maximum amount of stock at market price for the given investment.",
+    request_body(content = BuyOrderInput, content_type = "application/json"),
+    responses(
+        (status = 200, description = "Succesfully buy stock", body = BuyOrderInput),
+        (status = 400, description = "Bad request"),
+    )
+)]
 pub async fn buy(
     State(state): State<AppState>, Json(payload): Json<BuyOrderInput>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -63,6 +75,16 @@ pub async fn buy(
     Ok(format!("Bought {} shares for ${:.2}", shares_to_buy, actual_cost))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/sell",
+    request_body(content = SellOrderInput, content_type = "application/json"),
+    description = "Sell the defined number of stocks at market price.",
+    responses(
+        (status = 200, description = "Successfully sold stock", body = String),
+        (status = 400, description = "Bad request"),
+    )
+)]
 pub async fn sell(
     State(state): State<AppState>, Json(payload): Json<SellOrderInput>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -119,6 +141,14 @@ async fn get_current_price(state: &AppState) -> Result<f64, AppError> {
     Ok(price_mean)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/price",
+    description = "Get the current market price of the tracked stock.",
+    responses(
+        (status = 200, description = "Succesfully retrieved stock price", body = String),
+    )
+)]
 pub async fn price(
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, AppError> {

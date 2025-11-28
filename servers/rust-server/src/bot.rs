@@ -5,6 +5,7 @@ use axum::{
 };
 use entity::{bot, wallet, orderbook};
 use sea_orm::{DatabaseConnection, EntityTrait, ColumnTrait, QueryFilter};
+
 use crate::{error::AppError, state::AppState};
 
 #[derive(Template)]

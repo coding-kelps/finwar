@@ -4,12 +4,24 @@ use sea_orm::{ActiveValue::Set, prelude::Decimal};
 use crate::{error::AppError, state::AppState};
 use entity::{bot, wallet};
 use sea_orm::ActiveModelTrait;
+use serde::{Serialize, Deserialize};
+use utoipa::ToSchema;
 
-#[derive(serde::Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 pub struct EnrollPayload {
     pub name: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/enroll",
+    description = "Enroll a new bot to the market. Each bot must have a unique name.",
+    request_body(content = EnrollPayload, content_type = "application/json"),
+    responses(
+        (status = 200, description = "New bot enrolled successfully", body = String),
+        (status = 406, description = "Bot with same name already exists", body = String),
+    ),
+)]
 pub async fn enroll(
     State(state): State<AppState>, Json(payload): Json<EnrollPayload>,
 ) -> Result<String, AppError> {
